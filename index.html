@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0a0808" />
+<title>Black Ledger</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-void: #0a0808;
+    --bg-deep: #12100f;
+    --bg-card: #1a1716;
+    --bg-elevated: #221e1c;
+    --bg-hover: #2a2624;
+    --border-subtle: #2e2825;
+    --border-strong: #3d3431;
+    --ink: #e8e0d4;
+    --ink-dim: #a89e91;
+    --ink-faint: #6d6358;
+    --candle: #d4a341;
+    --candle-bright: #f0c060;
+    --candle-dim: #8a6a28;
+    --blood: #a83232;
+    --blood-bright: #c94545;
+    --blood-deep: #6a1f1f;
+    --moss: #6b8e4e;
+    --moss-bright: #8eb56a;
+    --rust: #b8693a;
+    --shadow-deep: 0 20px 60px rgba(0,0,0,0.8), 0 8px 20px rgba(0,0,0,0.5);
+    --shadow-soft: 0 4px 20px rgba(0,0,0,0.4);
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg-void);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: var(--grain);
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 1;
+    mix-blend-mode: overlay;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at top, rgba(168, 50, 50, 0.04), transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(212, 163, 65, 0.03), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 2;
+    max-width: 540px;
+    margin: 0 auto;
+    padding: env(safe-area-inset-top) 0 calc(80px + env(safe-area-inset-bottom));
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    padding: 28px 22px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-subtle);
+    position: relative;
+  }
+  header::before, header::after {
+    content: '';
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--candle-dim));
+  }
+  header::before { left: 22px; }
+  header::after { right: 22px; transform: translateY(-50%) scaleX(-1); }
+
+  .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 30px;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .brand .amp { color: var(--blood); font-style: italic; font-weight: 400; }
+  .tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-deep);
+    padding: 0 12px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto;
+    padding: 14px 16px;
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+  }
+  .tab.active { color: var(--candle); }
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 16px; right: 16px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--candle), transparent);
+  }
+
+  /* PANELS */
+  .panel { display: none; padding: 20px 18px; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 18px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .card.glow {
+    background: linear-gradient(180deg, var(--bg-elevated), var(--bg-card));
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    text-transform: lowercase;
+  }
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  /* THE BIG NUMBER (Safe to Spend) */
+  .hero-card {
+    background: linear-gradient(160deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-strong);
+    padding: 24px 22px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: 50%; transform: translateX(-50%);
+    width: 200%; height: 100%;
+    background: radial-gradient(ellipse at center, rgba(212, 163, 65, 0.08), transparent 60%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--ink-dim);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .hero-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 56px;
+    color: var(--candle-bright);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 30px rgba(240, 192, 96, 0.2);
+    position: relative;
+  }
+  .hero-number.danger { color: var(--blood-bright); text-shadow: 0 0 30px rgba(201, 69, 69, 0.3); }
+  .hero-number .cents { font-size: 26px; opacity: 0.7; }
+  .hero-sub {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    position: relative;
+  }
+  .hero-divider {
+    width: 60%; height: 1px;
+    margin: 14px auto;
+    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+  }
+  .hero-meta {
+    display: flex;
+    justify-content: space-around;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .hero-meta strong { color: var(--ink); display: block; font-size: 14px; margin-top: 2px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+
+  /* STAT GRID */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 14px;
+    position: relative;
+  }
+  .stat-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .stat-value.candle { color: var(--candle); }
+  .stat-value.blood { color: var(--blood-bright); }
+  .stat-value.moss { color: var(--moss-bright); }
+  .stat-bar {
+    height: 3px; margin-top: 8px;
+    background: var(--bg-void); border-radius: 2px; overflow: hidden;
+  }
+  .stat-bar > div {
+    height: 100%;
+    background: linear-gradient(90deg, var(--candle-dim), var(--candle));
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* LIST ITEMS */
+  .list-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .list-item:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+  .list-item .icon {
+    width: 32px; height: 32px;
+    border-radius: 4px;
+    background: var(--bg-elevated);
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 12px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .list-item .body { flex: 1; min-width: 0; }
+  .list-item .title {
+    font-size: 14px; color: var(--ink); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .list-item .sub {
+    font-size: 11px; color: var(--ink-faint); margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .list-item .amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    text-align: right;
+  }
+  .list-item .amount.blood { color: var(--blood-bright); }
+  .list-item .amount.candle { color: var(--candle); }
+  .list-item .amount.moss { color: var(--moss-bright); }
+  .list-item.urgent { border-left: 3px solid var(--blood); }
+  .list-item.warning { border-left: 3px solid var(--candle); }
+  .list-item.safe { border-left: 3px solid var(--moss); }
+  .list-item.paid { opacity: 0.5; }
+  .list-item.paid .title { text-decoration: line-through; }
+
+  /* BUTTONS */
+  .btn {
+    background: var(--bg-elevated);
+    color: var(--ink);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 11px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--bg-hover); border-color: var(--candle-dim); }
+  .btn.primary {
+    background: linear-gradient(180deg, var(--candle), var(--candle-dim));
+    color: var(--bg-void);
+    border-color: var(--candle);
+    font-weight: 700;
+  }
+  .btn.primary:hover { filter: brightness(1.1); }
+  .btn.danger { color: var(--blood-bright); border-color: var(--blood-deep); }
+  .btn.danger:hover { background: var(--blood-deep); color: var(--ink); }
+  .btn.full { width: 100%; }
+  .btn.small { padding: 7px 12px; font-size: 10px; }
+
+  /* FAB */
+  .fab {
+    position: fixed;
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    right: 22px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, var(--blood-bright), var(--blood));
+    border: 1px solid var(--blood-bright);
+    color: var(--ink);
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(168, 50, 50, 0.4), 0 4px 8px rgba(0,0,0,0.5);
+    z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s;
+    line-height: 1;
+  }
+  .fab:hover { transform: scale(1.05); }
+  .fab:active { transform: scale(0.95); }
+
+  /* BOTTOM NAV */
+  .nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10, 8, 8, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 40;
+  }
+  .nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    padding: 8px 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: color 0.15s;
+  }
+  .nav-btn .nav-icon { font-size: 18px; }
+  .nav-btn.active { color: var(--candle-bright); }
+
+  /* MODAL */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-bg.open { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: var(--bg-deep);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 420px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-deep);
+    position: relative;
+  }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+  .modal-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-bottom: 18px;
+  }
+
+  /* FORMS */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 11px 14px;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none;
+    border-color: var(--candle-dim);
+  }
+  .field input[type="number"], .field .money { font-family: 'JetBrains Mono', monospace; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions .btn { flex: 1; }
+
+  /* PROGRESS BARS */
+  .progress {
+    height: 8px;
+    background: var(--bg-void);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+    border: 1px solid var(--border-subtle);
+  }
+  .progress > div {
+    height: 100%;
+    background: linear-gradient(90deg, var(--candle-dim), var(--candle));
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  .progress > div.moss { background: linear-gradient(90deg, #4a6a3a, var(--moss-bright)); }
+  .progress > div.blood { background: linear-gradient(90deg, var(--blood-deep), var(--blood-bright)); }
+
+  /* ALLOCATION WATERFALL */
+  .waterfall { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  .waterfall-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    border-left-width: 3px;
+  }
+  .waterfall-row .label {
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .waterfall-row .label small {
+    display: block;
+    color: var(--ink-faint);
+    font-size: 10px;
+    margin-top: 1px;
+    letter-spacing: 0.05em;
+  }
+  .waterfall-row .amt {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 16px;
+  }
+  .waterfall-row.bills { border-left-color: var(--blood); }
+  .waterfall-row.bills .amt { color: var(--blood-bright); }
+  .waterfall-row.debt { border-left-color: var(--rust); }
+  .waterfall-row.debt .amt { color: var(--rust); }
+  .waterfall-row.savings { border-left-color: var(--moss); }
+  .waterfall-row.savings .amt { color: var(--moss-bright); }
+  .waterfall-row.buffer { border-left-color: var(--ink-dim); }
+  .waterfall-row.buffer .amt { color: var(--ink-dim); }
+  .waterfall-row.fun { border-left-color: var(--candle); }
+  .waterfall-row.fun .amt { color: var(--candle); }
+  .waterfall-row.total {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--candle-bright);
+  }
+  .waterfall-row.total .amt { color: var(--candle-bright); font-size: 18px; }
+
+  /* CHIPS */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
+  .chip {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--ink-dim);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+  }
+  .chip.active {
+    background: var(--blood-deep);
+    color: var(--ink);
+    border-color: var(--blood);
+  }
+  .chip:hover { border-color: var(--candle-dim); color: var(--ink); }
+
+  /* SECTION HEADERS */
+  .section-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin: 22px 0 12px;
+    padding: 0 4px;
+  }
+  .section-header h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .section-header .meta {
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--ink-faint);
+  }
+  .empty .icon { font-size: 32px; margin-bottom: 10px; opacity: 0.5; }
+  .empty .msg {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  /* SETTINGS */
+  .setting-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-row .label { font-size: 14px; color: var(--ink); }
+  .setting-row .label small { display: block; color: var(--ink-faint); font-size: 11px; margin-top: 2px; }
+  .setting-row .value {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--candle);
+    font-size: 14px;
+  }
+
+  /* CHART CONTAINER */
+  .chart-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .chart-wrap canvas { max-height: 180px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: calc(100px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-elevated);
+    border: 1px solid var(--candle-dim);
+    color: var(--ink);
+    padding: 12px 22px;
+    border-radius: 4px;
+    font-size: 13px;
+    box-shadow: var(--shadow-deep);
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* INSIGHT CARDS */
+  .insight {
+    background: linear-gradient(180deg, var(--bg-elevated), var(--bg-card));
+    border: 1px solid var(--border-subtle);
+    border-left: 3px solid var(--candle);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .insight strong { color: var(--candle); font-family: 'Cormorant Garamond', serif; font-size: 15px; }
+  .insight.warn { border-left-color: var(--blood); }
+  .insight.warn strong { color: var(--blood-bright); }
+  .insight.good { border-left-color: var(--moss); }
+  .insight.good strong { color: var(--moss-bright); }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+    margin: 24px 0 18px;
+    position: relative;
+  }
+  .divider::before {
+    content: '◆';
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: var(--bg-void);
+    color: var(--candle-dim);
+    padding: 0 12px;
+    font-size: 10px;
+  }
+
+  /* ONBOARDING */
+  .onboard-bg {
+    position: fixed; inset: 0;
+    background: var(--bg-void);
+    z-index: 200;
+    overflow-y: auto;
+  }
+  .onboard-bg.hidden { display: none; }
+  .onboard {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 50px 24px env(safe-area-inset-bottom);
+  }
+  .onboard h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    text-align: center;
+    color: var(--ink);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .onboard h1 .amp { color: var(--blood); font-style: italic; }
+  .onboard .quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-faint);
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .onboard h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--candle);
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+  }
+
+  /* COLLECTIONS WARNING */
+  .collection-row {
+    background: linear-gradient(180deg, rgba(168, 50, 50, 0.1), var(--bg-card));
+    border: 1px solid var(--blood-deep);
+    border-radius: 4px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .collection-row .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .collection-row .name { font-weight: 600; color: var(--ink); }
+  .collection-row .amount { font-family: 'JetBrains Mono', monospace; color: var(--blood-bright); font-weight: 500; }
+  .collection-row .actions { display: flex; gap: 8px; margin-top: 10px; }
+  .collection-row .tip {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 6px;
+    padding-left: 10px;
+    border-left: 2px solid var(--blood-deep);
+  }
+
+  /* CALENDAR */
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+  .cal-day {
+    aspect-ratio: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    padding: 4px;
+    font-size: 11px;
+    color: var(--ink-dim);
+    position: relative;
+    text-align: center;
+  }
+  .cal-day.has-bill { border-color: var(--blood); }
+  .cal-day.today { background: var(--bg-elevated); color: var(--candle); border-color: var(--candle-dim); font-weight: 600; }
+  .cal-day .dot {
+    position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; background: var(--blood); border-radius: 50%;
+  }
+  .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
+  .cal-header div { text-align: center; font-size: 9px; color: var(--ink-faint); letter-spacing: 0.1em; padding: 4px 0; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-deep); }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboard" class="onboard-bg hidden">
+  <div class="onboard">
+    <h1>BLACK<span class="amp">&</span>LEDGER</h1>
+    <p class="quote">"What is owed must be reckoned."</p>
+
+    <h2>The Reckoning</h2>
+    <p style="color: var(--ink-dim); margin-bottom: 24px; line-height: 1.7;">
+      Before we begin, I need to know your numbers. Honest answers only — this app cannot help you if you lie to it. Everything stays on this device.
+    </p>
+
+    <div class="card glow">
+      <div class="field">
+        <label>Paycheck (after taxes)</label>
+        <input id="ob-paycheck" type="number" step="0.01" placeholder="1525" />
+      </div>
+      <div class="field">
+        <label>Last paycheck date</label>
+        <input id="ob-lastpay" type="date" />
+      </div>
+      <div class="field">
+        <label>Pay frequency</label>
+        <select id="ob-frequency">
+          <option value="biweekly">Every 2 weeks (bi-weekly)</option>
+          <option value="weekly">Weekly</option>
+          <option value="semimonthly">Twice a month</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Weekly fun money target</label>
+        <input id="ob-funmoney" type="number" step="0.01" placeholder="250" />
+        <small style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;">
+          For nights out, takeout, smokes, misc. Resets every Monday.
+        </small>
+      </div>
+      <div class="field">
+        <label>Per-paycheck "Oh Shit" buffer</label>
+        <input id="ob-buffer" type="number" step="0.01" value="40" />
+        <small style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;">
+          Auto-saved each paycheck to absorb surprises. Recommended: $40.
+        </small>
+      </div>
+    </div>
+
+    <button class="btn primary full" onclick="finishOnboard()" style="margin-top: 16px;">Begin</button>
+    <p style="color: var(--ink-faint); font-size: 11px; text-align: center; margin-top: 12px;">
+      You'll add bills, debts, and goals after this.
+    </p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app">
+  <header>
+    <div class="brand">BLACK<span class="amp">&</span>LEDGER</div>
+    <div class="tagline" id="tagline">what is owed must be reckoned</div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="home">Today</button>
+    <button class="tab" data-tab="paycheck">Paycheck</button>
+    <button class="tab" data-tab="bills">Bills</button>
+    <button class="tab" data-tab="debt">Debt</button>
+    <button class="tab" data-tab="goals">Goals</button>
+    <button class="tab" data-tab="insights">Insights</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </div>
+
+  <!-- TODAY -->
+  <div class="panel active" id="panel-home">
+    <div class="hero-card">
+      <div class="hero-label">Safe to Spend Today</div>
+      <div class="hero-number" id="safeToSpend">$0</div>
+      <div class="hero-sub" id="safeToSpendSub">until next paycheck</div>
+      <div class="hero-divider"></div>
+      <div class="hero-meta">
+        <div>This Week<strong id="weekRemaining">$0</strong></div>
+        <div>Next Pay<strong id="nextPayCountdown">—</strong></div>
+        <div>This Month<strong id="monthSpent">$0</strong></div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">fun money used</div>
+        <div class="stat-value candle" id="funUsed">$0</div>
+        <div class="stat-bar"><div id="funBar" style="width: 0%"></div></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">bills due soon</div>
+        <div class="stat-value blood" id="billsDueSoon">$0</div>
+        <div class="stat-bar"><div id="billsBar" style="width: 0%; background: linear-gradient(90deg, var(--blood-deep), var(--blood-bright));"></div></div>
+      </div>
+    </div>
+
+    <div class="section-header"><h3>Upcoming Bills</h3><span class="meta" id="billsCount">0 ahead</span></div>
+    <div id="upcomingBills"></div>
+
+    <div class="section-header"><h3>Recent Activity</h3><span class="meta">last 7 days</span></div>
+    <div id="recentActivity"></div>
+
+    <div class="section-header"><h3>Today's Reckoning</h3><span class="meta">insights</span></div>
+    <div id="dailyInsights"></div>
+  </div>
+
+  <!-- PAYCHECK -->
+  <div class="panel" id="panel-paycheck">
+    <div class="card glow">
+      <div class="card-label">next paycheck</div>
+      <div class="card-title" id="nextPayDate">—</div>
+      <div style="font-family: 'JetBrains Mono', monospace; color: var(--candle-bright); font-size: 28px; margin-top: 6px;" id="nextPayAmount">$0</div>
+      <div style="color: var(--ink-faint); font-size: 12px; margin-top: 4px;" id="nextPayCountdownTxt">— days away</div>
+      <button class="btn primary full" style="margin-top: 14px;" onclick="markPaycheckReceived()">Mark Paycheck Received</button>
+    </div>
+
+    <div class="section-header"><h3>The Allocation</h3><span class="meta">where it goes</span></div>
+    <div class="waterfall" id="waterfall"></div>
+
+    <div class="section-header"><h3>Paycheck History</h3></div>
+    <div id="paycheckHistory"></div>
+  </div>
+
+  <!-- BILLS -->
+  <div class="panel" id="panel-bills">
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">monthly bills</div>
+        <div class="stat-value" id="totalMonthlyBills">$0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">paid this month</div>
+        <div class="stat-value moss" id="paidThisMonth">$0</div>
+      </div>
+    </div>
+
+    <button class="btn primary full" onclick="openBillModal()">+ Add Bill</button>
+
+    <div class="section-header"><h3>This Month</h3></div>
+    <div id="billsList"></div>
+
+    <div class="section-header"><h3>Calendar</h3><span class="meta" id="calMonthLabel"></span></div>
+    <div class="card">
+      <div class="cal-header">
+        <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </div>
+
+  <!-- DEBT -->
+  <div class="panel" id="panel-debt">
+    <div class="hero-card">
+      <div class="hero-label">Total Debt</div>
+      <div class="hero-number danger" id="totalDebt">$0</div>
+      <div class="hero-sub" id="debtFreeDate">add debts to see projection</div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">credit cards</div>
+        <div class="stat-value blood" id="ccTotal">$0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">collections</div>
+        <div class="stat-value blood" id="collectionsTotal">$0</div>
+      </div>
+    </div>
+
+    <button class="btn primary full" onclick="openDebtModal()">+ Add Debt</button>
+
+    <div class="section-header"><h3>Strategy</h3><span class="meta">recommended</span></div>
+    <div id="debtStrategy"></div>
+
+    <div class="section-header"><h3>Active Debts</h3></div>
+    <div id="debtList"></div>
+
+    <div class="section-header"><h3>Collections</h3><span class="meta">handle separately</span></div>
+    <div id="collectionsList"></div>
+
+    <div class="section-header"><h3>Credit Score</h3></div>
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div class="card-label">current score</div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; color: var(--candle);" id="creditScore">—</div>
+        </div>
+        <button class="btn small" onclick="logCreditScore()">Log Score</button>
+      </div>
+      <div class="chart-wrap" style="margin-top: 10px;"><canvas id="creditChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- GOALS -->
+  <div class="panel" id="panel-goals">
+    <div class="hero-card">
+      <div class="hero-label">Saved Across All Goals</div>
+      <div class="hero-number" id="totalSaved">$0</div>
+      <div class="hero-sub" id="totalGoalsSub">0 of 0 goals on pace</div>
+    </div>
+
+    <button class="btn primary full" onclick="openGoalModal()">+ Add Goal</button>
+
+    <div class="section-header"><h3>Active Goals</h3></div>
+    <div id="goalsList"></div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="panel" id="panel-insights">
+    <div class="section-header"><h3>This Week</h3></div>
+    <div class="chart-wrap"><canvas id="weekChart"></canvas></div>
+
+    <div class="section-header"><h3>By Category</h3></div>
+    <div class="chart-wrap"><canvas id="catChart"></canvas></div>
+
+    <div class="section-header"><h3>Reckoning</h3></div>
+    <div id="weeklyReview"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="panel" id="panel-settings">
+    <div class="card">
+      <div class="card-label">income</div>
+      <div class="setting-row">
+        <div class="label">Paycheck<small>after taxes</small></div>
+        <div class="value" id="setPaycheck">$0</div>
+      </div>
+      <div class="setting-row">
+        <div class="label">Frequency</div>
+        <div class="value" id="setFrequency">—</div>
+      </div>
+      <div class="setting-row">
+        <div class="label">Weekly fun money</div>
+        <div class="value" id="setFun">$0</div>
+      </div>
+      <div class="setting-row">
+        <div class="label">Buffer per paycheck</div>
+        <div class="value" id="setBuffer">$0</div>
+      </div>
+      <button class="btn full" style="margin-top: 14px;" onclick="openSettingsModal()">Edit Income & Settings</button>
+    </div>
+
+    <div class="card">
+      <div class="card-label">your data</div>
+      <p style="color: var(--ink-dim); font-size: 13px; margin-bottom: 14px; line-height: 1.6;">
+        Everything is stored locally on this device. Export regularly to back up. Import to restore or sync to another device.
+      </p>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn full" onclick="exportData()">Export JSON</button>
+        <button class="btn full" onclick="document.getElementById('importFile').click()">Import JSON</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">snapshot</div>
+      <p style="color: var(--ink-dim); font-size: 13px; margin-bottom: 14px; line-height: 1.6;">
+        Save a frozen copy of your finances right now. Useful for tracking where you were vs. where you are.
+      </p>
+      <button class="btn full" onclick="saveSnapshot()">Save Snapshot</button>
+      <div id="snapshotsList" style="margin-top: 12px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">danger zone</div>
+      <button class="btn danger full" onclick="resetEverything()">Reset Everything</button>
+    </div>
+
+    <div style="text-align: center; margin-top: 24px; color: var(--ink-faint); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 13px;">
+      "Memento mori. Memento solvere."<br/>
+      <span style="font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; font-style: normal;">— Black Ledger v1.0</span>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openTransactionModal()">+</button>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <button class="nav-btn active" data-tab="home"><span class="nav-icon">☽</span>Today</button>
+  <button class="nav-btn" data-tab="bills"><span class="nav-icon">⌖</span>Bills</button>
+  <button class="nav-btn" data-tab="debt"><span class="nav-icon">⚒</span>Debt</button>
+  <button class="nav-btn" data-tab="goals"><span class="nav-icon">✦</span>Goals</button>
+  <button class="nav-btn" data-tab="insights"><span class="nav-icon">⌬</span>Stats</button>
+</div>
+
+<!-- TRANSACTION MODAL -->
+<div class="modal-bg" id="txModal">
+  <div class="modal">
+    <div class="modal-title">Log Transaction</div>
+    <div class="modal-sub">a brief reckoning</div>
+    <div class="field">
+      <label>Amount</label>
+      <input id="tx-amount" type="number" step="0.01" placeholder="0.00" />
+    </div>
+    <div class="field">
+      <label>Type</label>
+      <div class="chips">
+        <span class="chip active" data-tx-type="expense">Expense</span>
+        <span class="chip" data-tx-type="income">Income</span>
+      </div>
+    </div>
+    <div class="field" id="categoryField">
+      <label>Category</label>
+      <div class="chips" id="categoryChips">
+        <span class="chip active" data-cat="bar">Bar / Drinks</span>
+        <span class="chip" data-cat="takeout-so">Takeout · S/O</span>
+        <span class="chip" data-cat="takeout-cw">Takeout · Coworkers</span>
+        <span class="chip" data-cat="takeout-solo">Takeout · Solo</span>
+        <span class="chip" data-cat="cigs">Smokes</span>
+        <span class="chip" data-cat="groceries">Groceries</span>
+        <span class="chip" data-cat="gas">Gas</span>
+        <span class="chip" data-cat="entertainment">Entertainment</span>
+        <span class="chip" data-cat="misc">Misc</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Note <small style="color: var(--ink-faint); text-transform: none; letter-spacing: 0; font-weight: normal;">(optional)</small></label>
+      <input id="tx-note" type="text" placeholder="e.g. wings with the boys" />
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input id="tx-date" type="date" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('txModal')">Cancel</button>
+      <button class="btn primary" onclick="saveTransaction()">Log It</button>
+    </div>
+  </div>
+</div>
+
+<!-- BILL MODAL -->
+<div class="modal-bg" id="billModal">
+  <div class="modal">
+    <div class="modal-title" id="billModalTitle">Add Bill</div>
+    <div class="modal-sub">recurring obligations</div>
+    <input type="hidden" id="bill-id" />
+    <div class="field">
+      <label>Name</label>
+      <input id="bill-name" type="text" placeholder="e.g. Rent, Electric, Spotify" />
+    </div>
+    <div class="field">
+      <label>Amount</label>
+      <input id="bill-amount" type="number" step="0.01" />
+    </div>
+    <div class="field">
+      <label>Due day of month</label>
+      <input id="bill-day" type="number" min="1" max="31" placeholder="1-31" />
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <select id="bill-category">
+        <option value="housing">Housing</option>
+        <option value="utilities">Utilities</option>
+        <option value="insurance">Insurance</option>
+        <option value="loan">Loan</option>
+        <option value="subscription">Subscription</option>
+        <option value="phone">Phone</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="bill-delete-btn" onclick="deleteBill()" style="display: none;">Delete</button>
+      <button class="btn" onclick="closeModal('billModal')">Cancel</button>
+      <button class="btn primary" onclick="saveBill()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEBT MODAL -->
+<div class="modal-bg" id="debtModal">
+  <div class="modal">
+    <div class="modal-title" id="debtModalTitle">Add Debt</div>
+    <div class="modal-sub">what is owed</div>
+    <input type="hidden" id="debt-id" />
+    <div class="field">
+      <label>Name</label>
+      <input id="debt-name" type="text" placeholder="e.g. Capital One, Sallie Mae" />
+    </div>
+    <div class="field">
+      <label>Type</label>
+      <select id="debt-type">
+        <option value="credit_card">Credit Card</option>
+        <option value="student_loan">Student Loan</option>
+        <option value="auto_loan">Auto Loan</option>
+        <option value="collection">Collection</option>
+        <option value="personal_loan">Personal Loan</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Current Balance</label>
+      <input id="debt-balance" type="number" step="0.01" />
+    </div>
+    <div class="field">
+      <label>APR % <small style="color: var(--ink-faint); text-transform: none; letter-spacing: 0; font-weight: normal;">(0 if collection)</small></label>
+      <input id="debt-apr" type="number" step="0.01" placeholder="e.g. 24.99" />
+    </div>
+    <div class="field">
+      <label>Minimum Monthly Payment</label>
+      <input id="debt-min" type="number" step="0.01" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="debt-delete-btn" onclick="deleteDebt()" style="display: none;">Delete</button>
+      <button class="btn" onclick="closeModal('debtModal')">Cancel</button>
+      <button class="btn primary" onclick="saveDebt()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEBT PAYMENT MODAL -->
+<div class="modal-bg" id="debtPayModal">
+  <div class="modal">
+    <div class="modal-title">Log Payment</div>
+    <div class="modal-sub" id="debtPayName">—</div>
+    <input type="hidden" id="debtpay-id" />
+    <div class="field">
+      <label>Payment Amount</label>
+      <input id="debtpay-amount" type="number" step="0.01" />
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input id="debtpay-date" type="date" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('debtPayModal')">Cancel</button>
+      <button class="btn primary" onclick="saveDebtPayment()">Log Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="modal-bg" id="goalModal">
+  <div class="modal">
+    <div class="modal-title" id="goalModalTitle">Add Goal</div>
+    <div class="modal-sub">what you're saving for</div>
+    <input type="hidden" id="goal-id" />
+    <div class="field">
+      <label>Goal Name</label>
+      <input id="goal-name" type="text" placeholder="e.g. S/O Birthday, Vacation" />
+    </div>
+    <div class="field">
+      <label>Target Amount</label>
+      <input id="goal-target" type="number" step="0.01" />
+    </div>
+    <div class="field">
+      <label>Already Saved</label>
+      <input id="goal-current" type="number" step="0.01" value="0" />
+    </div>
+    <div class="field">
+      <label>Target Date <small style="color: var(--ink-faint); text-transform: none; letter-spacing: 0; font-weight: normal;">(optional)</small></label>
+      <input id="goal-date" type="date" />
+    </div>
+    <div class="field">
+      <label>Priority <small style="color: var(--ink-faint); text-transform: none; letter-spacing: 0; font-weight: normal;">(higher gets more allocation)</small></label>
+      <select id="goal-priority">
+        <option value="3">High</option>
+        <option value="2" selected>Medium</option>
+        <option value="1">Low</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="goal-delete-btn" onclick="deleteGoal()" style="display: none;">Delete</button>
+      <button class="btn" onclick="closeModal('goalModal')">Cancel</button>
+      <button class="btn primary" onclick="saveGoal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL CONTRIBUTE MODAL -->
+<div class="modal-bg" id="goalContribModal">
+  <div class="modal">
+    <div class="modal-title">Contribute to Goal</div>
+    <div class="modal-sub" id="goalContribName">—</div>
+    <input type="hidden" id="goalcontrib-id" />
+    <div class="field">
+      <label>Amount</label>
+      <input id="goalcontrib-amount" type="number" step="0.01" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('goalContribModal')">Cancel</button>
+      <button class="btn primary" onclick="saveGoalContribution()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <div class="modal-title">Income & Allocation</div>
+    <div class="modal-sub">refine your reckoning</div>
+    <div class="field">
+      <label>Paycheck (after taxes)</label>
+      <input id="set-paycheck" type="number" step="0.01" />
+    </div>
+    <div class="field">
+      <label>Pay frequency</label>
+      <select id="set-freq">
+        <option value="biweekly">Bi-weekly</option>
+        <option value="weekly">Weekly</option>
+        <option value="semimonthly">Twice a month</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Last paycheck date</label>
+      <input id="set-lastpay" type="date" />
+    </div>
+    <div class="field">
+      <label>Weekly fun money</label>
+      <input id="set-funmoney" type="number" step="0.01" />
+    </div>
+    <div class="field">
+      <label>Buffer per paycheck</label>
+      <input id="set-buffermoney" type="number" step="0.01" />
+    </div>
+    <div class="field">
+      <label>Extra debt payment per paycheck</label>
+      <input id="set-debtextra" type="number" step="0.01" />
+      <small style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;">
+        Above minimums. Goes to your priority debt.
+      </small>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('settingsModal')">Cancel</button>
+      <button class="btn primary" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREDIT SCORE MODAL -->
+<div class="modal-bg" id="creditModal">
+  <div class="modal">
+    <div class="modal-title">Log Credit Score</div>
+    <div class="modal-sub">a marker on the road</div>
+    <div class="field">
+      <label>Current Score</label>
+      <input id="credit-score" type="number" min="300" max="850" />
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input id="credit-date" type="date" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('creditModal')">Cancel</button>
+      <button class="btn primary" onclick="saveCreditScore()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========================================================================
+   BLACK LEDGER v1.0
+   ======================================================================== */
+
+const STORAGE_KEY = 'blackLedger_v1';
+
+let state = {
+  initialized: false,
+  income: {
+    paycheck: 0,
+    frequency: 'biweekly',
+    lastPayDate: null,
+    funMoney: 200,
+    buffer: 40,
+    debtExtra: 0,
+  },
+  bills: [],
+  debts: [],
+  goals: [],
+  transactions: [],
+  paychecksReceived: [],
+  debtPayments: [],
+  creditScores: [],
+  snapshots: [],
+  txDraft: { type: 'expense', category: 'bar' },
+};
+
+let charts = {};
+
+/* -------------------- Storage -------------------- */
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) { console.error(e); toast('Save failed'); }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state = { ...state, ...parsed };
+    }
+  } catch (e) { console.error(e); }
+}
+
+/* -------------------- Utilities -------------------- */
+const fmt = n => '$' + (Math.round(n*100)/100).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtShort = n => {
+  const v = Math.round(n*100)/100;
+  if (Math.abs(v) >= 1000) return '$' + (v/1000).toFixed(1) + 'k';
+  return fmt(v);
+};
+const today = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const dateStr = d => d.toISOString().slice(0,10);
+const parseDate = s => { const d = new Date(s + 'T00:00:00'); return d; };
+const daysBetween = (a, b) => Math.round((b - a) / 86400000);
+const startOfWeek = d => { const x = new Date(d); const day = x.getDay(); x.setDate(x.getDate() - day); x.setHours(0,0,0,0); return x; };
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+/* -------------------- Paycheck Math -------------------- */
+function nextPaycheckDate() {
+  if (!state.income.lastPayDate) return null;
+  const last = parseDate(state.income.lastPayDate);
+  const todayD = today();
+  const freq = state.income.frequency;
+  let next = new Date(last);
+  while (next <= todayD) {
+    if (freq === 'weekly') next.setDate(next.getDate() + 7);
+    else if (freq === 'biweekly') next.setDate(next.getDate() + 14);
+    else if (freq === 'semimonthly') {
+      const day = next.getDate();
+      if (day < 15) { next.setDate(15); }
+      else { next.setMonth(next.getMonth() + 1); next.setDate(1); }
+    }
+    else if (freq === 'monthly') next.setMonth(next.getMonth() + 1);
+  }
+  return next;
+}
+
+function paychecksUntil(targetDate) {
+  if (!state.income.lastPayDate) return 0;
+  const last = parseDate(state.income.lastPayDate);
+  const target = parseDate(targetDate);
+  const todayD = today();
+  let count = 0;
+  let cur = new Date(last);
+  const freq = state.income.frequency;
+  while (cur <= target) {
+    if (cur > todayD) count++;
+    if (freq === 'weekly') cur.setDate(cur.getDate() + 7);
+    else if (freq === 'biweekly') cur.setDate(cur.getDate() + 14);
+    else if (freq === 'semimonthly') {
+      const day = cur.getDate();
+      if (day < 15) { cur.setDate(15); }
+      else { cur.setMonth(cur.getMonth() + 1); cur.setDate(1); }
+    }
+    else if (freq === 'monthly') cur.setMonth(cur.getMonth() + 1);
+  }
+  return count;
+}
+
+function monthlyIncomeApprox() {
+  const map = { weekly: 4.333, biweekly: 2.167, semimonthly: 2, monthly: 1 };
+  return state.income.paycheck * (map[state.income.frequency] || 2.167);
+}
+
+/* -------------------- Allocation -------------------- */
+function buildAllocation() {
+  const pay = state.income.paycheck || 0;
+  const freqMult = { weekly: 1/4.333, biweekly: 1/2.167, semimonthly: 0.5, monthly: 1 }[state.income.frequency] || 1/2.167;
+
+  // Bills per paycheck
+  const monthlyBills = state.bills.reduce((s, b) => s + b.amount, 0);
+  const billsPerPay = monthlyBills * freqMult;
+
+  // Debt minimums
+  const monthlyDebtMin = state.debts.filter(d => d.type !== 'collection').reduce((s, d) => s + (d.minimum || 0), 0);
+  const debtMinPerPay = monthlyDebtMin * freqMult;
+
+  // Extra debt
+  const debtExtra = state.income.debtExtra || 0;
+
+  // Buffer
+  const buffer = state.income.buffer || 0;
+
+  // Goal allocation
+  const totalPriority = state.goals.reduce((s, g) => s + (g.priority || 1), 0);
+  const goalAllocations = {};
+  let totalGoalAlloc = 0;
+
+  state.goals.forEach(g => {
+    if (g.targetDate) {
+      const remaining = Math.max(0, g.target - g.current);
+      const paychecksLeft = Math.max(1, paychecksUntil(g.targetDate));
+      goalAllocations[g.id] = Math.min(remaining, remaining / paychecksLeft);
+      totalGoalAlloc += goalAllocations[g.id];
+    }
+  });
+
+  // Fun money
+  const weeksPerPay = state.income.frequency === 'weekly' ? 1 :
+                     state.income.frequency === 'biweekly' ? 2 :
+                     state.income.frequency === 'semimonthly' ? 2.167 : 4.333;
+  const funPerPay = (state.income.funMoney || 0) * weeksPerPay;
+
+  // What's left
+  const allocated = billsPerPay + debtMinPerPay + debtExtra + buffer + totalGoalAlloc + funPerPay;
+  const leftover = pay - allocated;
+
+  return {
+    paycheck: pay,
+    bills: billsPerPay,
+    debtMin: debtMinPerPay,
+    debtExtra: debtExtra,
+    buffer: buffer,
+    goals: totalGoalAlloc,
+    goalDetails: goalAllocations,
+    fun: funPerPay,
+    leftover: leftover,
+    healthy: leftover >= 0,
+  };
+}
+
+/* -------------------- Onboarding -------------------- */
+function checkOnboard() {
+  if (!state.initialized) {
+    document.getElementById('onboard').classList.remove('hidden');
+    document.getElementById('ob-lastpay').value = dateStr(today());
+  }
+}
+
+function finishOnboard() {
+  const pay = parseFloat(document.getElementById('ob-paycheck').value);
+  const lastpay = document.getElementById('ob-lastpay').value;
+  const freq = document.getElementById('ob-frequency').value;
+  const fun = parseFloat(document.getElementById('ob-funmoney').value);
+  const buf = parseFloat(document.getElementById('ob-buffer').value);
+
+  if (!pay || !lastpay || !fun) { toast('Fill in all fields'); return; }
+
+  state.income.paycheck = pay;
+  state.income.lastPayDate = lastpay;
+  state.income.frequency = freq;
+  state.income.funMoney = fun;
+  state.income.buffer = buf || 0;
+  state.initialized = true;
+  save();
+
+  document.getElementById('onboard').classList.add('hidden');
+  renderAll();
+  toast('Welcome to the reckoning.');
+}
+
+/* -------------------- Tab Navigation -------------------- */
+function activateTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.nav-btn').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+  // scroll tab into view if from nav
+  const activeTab = document.querySelector(`.tab[data-tab="${tab}"]`);
+  if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  window.scrollTo(0, 0);
+  // Refresh charts when entering insights/debt
+  if (tab === 'insights') setTimeout(renderCharts, 50);
+  if (tab === 'debt') setTimeout(renderCreditChart, 50);
+}
+
+document.getElementById('tabs').addEventListener('click', e => {
+  if (e.target.classList.contains('tab')) activateTab(e.target.dataset.tab);
+});
+document.querySelectorAll('.nav-btn').forEach(b => {
+  b.addEventListener('click', () => activateTab(b.dataset.tab));
+});
+
+/* -------------------- Modal Helpers -------------------- */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* -------------------- Transactions -------------------- */
+function openTransactionModal() {
+  state.txDraft = { type: 'expense', category: 'bar' };
+  document.getElementById('tx-amount').value = '';
+  document.getElementById('tx-note').value = '';
+  document.getElementById('tx-date').value = dateStr(today());
+  // Reset chips
+  document.querySelectorAll('[data-tx-type]').forEach(c => c.classList.toggle('active', c.dataset.txType === 'expense'));
+  document.querySelectorAll('[data-cat]').forEach(c => c.classList.toggle('active', c.dataset.cat === 'bar'));
+  openModal('txModal');
+}
+
+document.querySelectorAll('[data-tx-type]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('[data-tx-type]').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.txDraft.type = chip.dataset.txType;
+    document.getElementById('categoryField').style.display = chip.dataset.txType === 'income' ? 'none' : 'block';
+  });
+});
+
+document.querySelectorAll('[data-cat]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('[data-cat]').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.txDraft.category = chip.dataset.cat;
+  });
+});
+
+function saveTransaction() {
+  const amount = parseFloat(document.getElementById('tx-amount').value);
+  const note = document.getElementById('tx-note').value.trim();
+  const date = document.getElementById('tx-date').value;
+  if (!amount || amount <= 0) { toast('Amount required'); return; }
+
+  state.transactions.push({
+    id: uid(),
+    type: state.txDraft.type,
+    category: state.txDraft.type === 'income' ? 'income' : state.txDraft.category,
+    amount: amount,
+    note: note,
+    date: date,
+    timestamp: Date.now(),
+  });
+  save();
+  closeModal('txModal');
+  renderAll();
+  toast(state.txDraft.type === 'income' ? 'Income logged' : `${fmt(amount)} logged`);
+}
+
+/* -------------------- Bills -------------------- */
+function openBillModal(bill) {
+  document.getElementById('billModalTitle').textContent = bill ? 'Edit Bill' : 'Add Bill';
+  document.getElementById('bill-id').value = bill?.id || '';
+  document.getElementById('bill-name').value = bill?.name || '';
+  document.getElementById('bill-amount').value = bill?.amount || '';
+  document.getElementById('bill-day').value = bill?.dueDay || '';
+  document.getElementById('bill-category').value = bill?.category || 'housing';
+  document.getElementById('bill-delete-btn').style.display = bill ? 'inline-block' : 'none';
+  openModal('billModal');
+}
+
+function saveBill() {
+  const id = document.getElementById('bill-id').value;
+  const name = document.getElementById('bill-name').value.trim();
+  const amount = parseFloat(document.getElementById('bill-amount').value);
+  const day = parseInt(document.getElementById('bill-day').value);
+  const cat = document.getElementById('bill-category').value;
+  if (!name || !amount || !day) { toast('Fill all fields'); return; }
+  if (id) {
+    const idx = state.bills.findIndex(b => b.id === id);
+    if (idx >= 0) state.bills[idx] = { ...state.bills[idx], name, amount, dueDay: day, category: cat };
+  } else {
+    state.bills.push({ id: uid(), name, amount, dueDay: day, category: cat, paidMonths: [] });
+  }
+  save();
+  closeModal('billModal');
+  renderAll();
+  toast('Bill saved');
+}
+
+function deleteBill() {
+  const id = document.getElementById('bill-id').value;
+  if (!confirm('Delete this bill?')) return;
+  state.bills = state.bills.filter(b => b.id !== id);
+  save();
+  closeModal('billModal');
+  renderAll();
+  toast('Bill removed');
+}
+
+function toggleBillPaid(id) {
+  const bill = state.bills.find(b => b.id === id);
+  if (!bill) return;
+  const monthKey = today().toISOString().slice(0,7);
+  bill.paidMonths = bill.paidMonths || [];
+  const idx = bill.paidMonths.indexOf(monthKey);
+  if (idx >= 0) bill.paidMonths.splice(idx, 1);
+  else bill.paidMonths.push(monthKey);
+  save();
+  renderAll();
+  toast(idx >= 0 ? 'Marked unpaid' : 'Bill paid ✓');
+}
+
+function nextDueDate(dueDay) {
+  const t = today();
+  let d = new Date(t.getFullYear(), t.getMonth(), dueDay);
+  if (d < t) d = new Date(t.getFullYear(), t.getMonth() + 1, dueDay);
+  return d;
+}
+
+/* -------------------- Debt -------------------- */
+function openDebtModal(debt) {
+  document.getElementById('debtModalTitle').textContent = debt ? 'Edit Debt' : 'Add Debt';
+  document.getElementById('debt-id').value = debt?.id || '';
+  document.getElementById('debt-name').value = debt?.name || '';
+  document.getElementById('debt-type').value = debt?.type || 'credit_card';
+  document.getElementById('debt-balance').value = debt?.balance || '';
+  document.getElementById('debt-apr').value = debt?.apr ?? '';
+  document.getElementById('debt-min').value = debt?.minimum || '';
+  document.getElementById('debt-delete-btn').style.display = debt ? 'inline-block' : 'none';
+  openModal('debtModal');
+}
+
+function saveDebt() {
+  const id = document.getElementById('debt-id').value;
+  const name = document.getElementById('debt-name').value.trim();
+  const type = document.getElementById('debt-type').value;
+  const balance = parseFloat(document.getElementById('debt-balance').value);
+  const apr = parseFloat(document.getElementById('debt-apr').value) || 0;
+  const minimum = parseFloat(document.getElementById('debt-min').value) || 0;
+  if (!name || !balance) { toast('Name and balance required'); return; }
+  if (id) {
+    const idx = state.debts.findIndex(d => d.id === id);
+    if (idx >= 0) state.debts[idx] = { ...state.debts[idx], name, type, balance, apr, minimum };
+  } else {
+    state.debts.push({ id: uid(), name, type, balance, apr, minimum, originalBalance: balance });
+  }
+  save();
+  closeModal('debtModal');
+  renderAll();
+  toast('Debt saved');
+}
+
+function deleteDebt() {
+  const id = document.getElementById('debt-id').value;
+  if (!confirm('Delete this debt? Better is to mark it paid off when you actually pay it.')) return;
+  state.debts = state.debts.filter(d => d.id !== id);
+  save();
+  closeModal('debtModal');
+  renderAll();
+  toast('Debt removed');
+}
+
+function openDebtPayModal(debt) {
+  document.getElementById('debtpay-id').value = debt.id;
+  document.getElementById('debtPayName').textContent = debt.name + ' · ' + fmt(debt.balance);
+  document.getElementById('debtpay-amount').value = debt.minimum || '';
+  document.getElementById('debtpay-date').value = dateStr(today());
+  openModal('debtPayModal');
+}
+
+function saveDebtPayment() {
+  const id = document.getElementById('debtpay-id').value;
+  const amount = parseFloat(document.getElementById('debtpay-amount').value);
+  const date = document.getElementById('debtpay-date').value;
+  if (!amount) { toast('Enter amount'); return; }
+  const debt = state.debts.find(d => d.id === id);
+  if (!debt) return;
+  debt.balance = Math.max(0, debt.balance - amount);
+  state.debtPayments.push({ id: uid(), debtId: id, debtName: debt.name, amount, date, timestamp: Date.now() });
+  save();
+  closeModal('debtPayModal');
+  renderAll();
+  if (debt.balance === 0) toast(`${debt.name} CLEARED ✦`);
+  else toast(`Payment logged. Balance: ${fmt(debt.balance)}`);
+}
+
+function debtFreeProjection() {
+  // Hybrid strategy: minimums on all + extra to smallest credit card balance first
+  const debts = state.debts.filter(d => d.type !== 'collection' && d.balance > 0).map(d => ({...d}));
+  if (!debts.length) return null;
+
+  const monthlyExtra = (state.income.debtExtra || 0) * { weekly: 4.333, biweekly: 2.167, semimonthly: 2, monthly: 1 }[state.income.frequency];
+  let monthsElapsed = 0;
+  const totalStart = debts.reduce((s, d) => s + d.balance, 0);
+  let totalInterest = 0;
+
+  while (debts.some(d => d.balance > 0) && monthsElapsed < 600) {
+    monthsElapsed++;
+    let extraPool = monthlyExtra;
+    // Apply minimums + interest
+    debts.forEach(d => {
+      if (d.balance <= 0) return;
+      const interest = (d.balance * (d.apr/100)) / 12;
+      totalInterest += interest;
+      d.balance += interest;
+      const pay = Math.min(d.balance, d.minimum);
+      d.balance -= pay;
+    });
+    // Apply extra to smallest CC balance (snowball-ish)
+    const targets = debts.filter(d => d.balance > 0 && d.type === 'credit_card').sort((a, b) => a.balance - b.balance);
+    const target = targets[0] || debts.find(d => d.balance > 0);
+    if (target && extraPool > 0) {
+      const apply = Math.min(target.balance, extraPool);
+      target.balance -= apply;
+    }
+  }
+  if (monthsElapsed >= 600) return { months: null, interest: 0, infinite: true };
+  const debtFreeDate = new Date();
+  debtFreeDate.setMonth(debtFreeDate.getMonth() + monthsElapsed);
+  return { months: monthsElapsed, date: debtFreeDate, interest: totalInterest };
+}
+
+/* -------------------- Goals -------------------- */
+function openGoalModal(goal) {
+  document.getElementById('goalModalTitle').textContent = goal ? 'Edit Goal' : 'Add Goal';
+  document.getElementById('goal-id').value = goal?.id || '';
+  document.getElementById('goal-name').value = goal?.name || '';
+  document.getElementById('goal-target').value = goal?.target || '';
+  document.getElementById('goal-current').value = goal?.current || 0;
+  document.getElementById('goal-date').value = goal?.targetDate || '';
+  document.getElementById('goal-priority').value = goal?.priority || 2;
+  document.getElementById('goal-delete-btn').style.display = goal ? 'inline-block' : 'none';
+  openModal('goalModal');
+}
+
+function saveGoal() {
+  const id = document.getElementById('goal-id').value;
+  const name = document.getElementById('goal-name').value.trim();
+  const target = parseFloat(document.getElementById('goal-target').value);
+  const current = parseFloat(document.getElementById('goal-current').value) || 0;
+  const targetDate = document.getElementById('goal-date').value || null;
+  const priority = parseInt(document.getElementById('goal-priority').value);
+  if (!name || !target) { toast('Name and target required'); return; }
+  if (id) {
+    const idx = state.goals.findIndex(g => g.id === id);
+    if (idx >= 0) state.goals[idx] = { ...state.goals[idx], name, target, current, targetDate, priority };
+  } else {
+    state.goals.push({ id: uid(), name, target, current, targetDate, priority, contributions: [] });
+  }
+  save();
+  closeModal('goalModal');
+  renderAll();
+  toast('Goal saved');
+}
+
+function deleteGoal() {
+  const id = document.getElementById('goal-id').value;
+  if (!confirm('Delete this goal?')) return;
+  state.goals = state.goals.filter(g => g.id !== id);
+  save();
+  closeModal('goalModal');
+  renderAll();
+  toast('Goal removed');
+}
+
+function openGoalContribModal(goal) {
+  document.getElementById('goalcontrib-id').value = goal.id;
+  document.getElementById('goalContribName').textContent = goal.name + ' · ' + fmt(goal.current) + ' / ' + fmt(goal.target);
+  document.getElementById('goalcontrib-amount').value = '';
+  openModal('goalContribModal');
+}
+
+function saveGoalContribution() {
+  const id = document.getElementById('goalcontrib-id').value;
+  const amount = parseFloat(document.getElementById('goalcontrib-amount').value);
+  if (!amount) { toast('Amount required'); return; }
+  const goal = state.goals.find(g => g.id === id);
+  if (!goal) return;
+  goal.current += amount;
+  goal.contributions = goal.contributions || [];
+  goal.contributions.push({ amount, date: dateStr(today()), timestamp: Date.now() });
+  save();
+  closeModal('goalContribModal');
+  renderAll();
+  if (goal.current >= goal.target) toast(`${goal.name} REACHED ✦`);
+  else toast(`+${fmt(amount)} to ${goal.name}`);
+}
+
+/* -------------------- Paycheck -------------------- */
+function markPaycheckReceived() {
+  const next = nextPaycheckDate();
+  state.paychecksReceived.push({
+    id: uid(),
+    amount: state.income.paycheck,
+    date: dateStr(today()),
+    timestamp: Date.now(),
+  });
+  // Auto-allocate buffer & goal contributions
+  const alloc = buildAllocation();
+
+  // Add goal allocations
+  if (state.goals.length && alloc.goalDetails) {
+    Object.keys(alloc.goalDetails).forEach(gid => {
+      const g = state.goals.find(x => x.id === gid);
+      if (g && alloc.goalDetails[gid] > 0) {
+        g.current += alloc.goalDetails[gid];
+        g.contributions = g.contributions || [];
+        g.contributions.push({
+          amount: alloc.goalDetails[gid], date: dateStr(today()),
+          auto: true, timestamp: Date.now()
+        });
+      }
+    });
+  }
+
+  // Update lastPayDate
+  state.income.lastPayDate = dateStr(today());
+  save();
+  renderAll();
+  toast(`+${fmt(state.income.paycheck)} · allocated`);
+}
+
+/* -------------------- Credit Score -------------------- */
+function logCreditScore() {
+  document.getElementById('credit-score').value = '';
+  document.getElementById('credit-date').value = dateStr(today());
+  openModal('creditModal');
+}
+
+function saveCreditScore() {
+  const score = parseInt(document.getElementById('credit-score').value);
+  const date = document.getElementById('credit-date').value;
+  if (!score || score < 300 || score > 850) { toast('Score must be 300-850'); return; }
+  state.creditScores.push({ id: uid(), score, date, timestamp: Date.now() });
+  save();
+  closeModal('creditModal');
+  renderAll();
+  toast(`Score: ${score} logged`);
+}
+
+/* -------------------- Settings -------------------- */
+function openSettingsModal() {
+  document.getElementById('set-paycheck').value = state.income.paycheck;
+  document.getElementById('set-freq').value = state.income.frequency;
+  document.getElementById('set-lastpay').value = state.income.lastPayDate || '';
+  document.getElementById('set-funmoney').value = state.income.funMoney;
+  document.getElementById('set-buffermoney').value = state.income.buffer;
+  document.getElementById('set-debtextra').value = state.income.debtExtra || 0;
+  openModal('settingsModal');
+}
+
+function saveSettings() {
+  state.income.paycheck = parseFloat(document.getElementById('set-paycheck').value) || 0;
+  state.income.frequency = document.getElementById('set-freq').value;
+  state.income.lastPayDate = document.getElementById('set-lastpay').value;
+  state.income.funMoney = parseFloat(document.getElementById('set-funmoney').value) || 0;
+  state.income.buffer = parseFloat(document.getElementById('set-buffermoney').value) || 0;
+  state.income.debtExtra = parseFloat(document.getElementById('set-debtextra').value) || 0;
+  save();
+  closeModal('settingsModal');
+  renderAll();
+  toast('Settings saved');
+}
+
+/* -------------------- Export / Import / Snapshots -------------------- */
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `black-ledger-${dateStr(today())}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Exported');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!confirm('This will replace all current data. Continue?')) return;
+      state = { ...state, ...data };
+      save();
+      renderAll();
+      toast('Data imported');
+    } catch (err) { toast('Invalid file'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function saveSnapshot() {
+  const snap = {
+    id: uid(),
+    date: dateStr(today()),
+    timestamp: Date.now(),
+    totalDebt: state.debts.reduce((s, d) => s + d.balance, 0),
+    totalSaved: state.goals.reduce((s, g) => s + g.current, 0),
+    creditScore: state.creditScores.length ? state.creditScores[state.creditScores.length-1].score : null,
+  };
+  state.snapshots.push(snap);
+  save();
+  renderAll();
+  toast('Snapshot saved');
+}
+
+function resetEverything() {
+  if (!confirm('Erase ALL data? This cannot be undone. Export first if unsure.')) return;
+  if (!confirm('Truly. Are. You. Sure.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+/* ========================================================================
+   RENDERING
+   ======================================================================== */
+
+function renderAll() {
+  if (!state.initialized) { checkOnboard(); return; }
+  renderHome();
+  renderPaycheck();
+  renderBills();
+  renderDebt();
+  renderGoals();
+  renderInsights();
+  renderSettings();
+}
+
+/* -------------------- Home -------------------- */
+function renderHome() {
+  const todayD = today();
+  const next = nextPaycheckDate();
+  const daysToNext = next ? daysBetween(todayD, next) : 0;
+
+  // Bills due before next paycheck (unpaid)
+  const monthKey = todayD.toISOString().slice(0,7);
+  const upcomingBills = state.bills.filter(b => {
+    const due = nextDueDate(b.dueDay);
+    const isPaid = (b.paidMonths || []).includes(due.toISOString().slice(0,7));
+    return !isPaid && (!next || due <= next);
+  });
+  const billsTotal = upcomingBills.reduce((s, b) => s + b.amount, 0);
+
+  // This week's spending
+  const weekStart = startOfWeek(todayD);
+  const weekTx = state.transactions.filter(t => t.type === 'expense' && parseDate(t.date) >= weekStart);
+  const weekSpent = weekTx.reduce((s, t) => s + t.amount, 0);
+  const weekRemaining = Math.max(0, (state.income.funMoney || 0) - weekSpent);
+
+  // Month spending
+  const monthStart = new Date(todayD.getFullYear(), todayD.getMonth(), 1);
+  const monthSpent = state.transactions.filter(t => t.type === 'expense' && parseDate(t.date) >= monthStart)
+    .reduce((s, t) => s + t.amount, 0);
+
+  // SAFE TO SPEND: weekly fun money minus this week's spending, minus any urgent bills hitting in next 7 days
+  const billsIn7 = state.bills.filter(b => {
+    const due = nextDueDate(b.dueDay);
+    const isPaid = (b.paidMonths || []).includes(due.toISOString().slice(0,7));
+    return !isPaid && daysBetween(todayD, due) <= 7;
+  }).reduce((s, b) => s + b.amount, 0);
+  const safeRaw = weekRemaining - billsIn7;
+  const safe = Math.max(0, safeRaw);
+
+  document.getElementById('safeToSpend').textContent = fmt(safe).split('.')[0] + (fmt(safe).includes('.') ? `<span class="cents">.${fmt(safe).split('.')[1]}</span>` : '');
+  document.getElementById('safeToSpend').innerHTML = `${fmt(safe).split('.')[0]}<span class="cents">.${fmt(safe).split('.')[1] || '00'}</span>`;
+  document.getElementById('safeToSpend').classList.toggle('danger', safeRaw < 0 || safe < 20);
+  document.getElementById('safeToSpendSub').textContent = safeRaw < 0
+    ? 'over by ' + fmt(Math.abs(safeRaw)) + ' — careful'
+    : `bills coming: ${fmt(billsIn7)} · week left: ${fmt(weekRemaining)}`;
+
+  document.getElementById('weekRemaining').textContent = fmt(weekRemaining);
+  document.getElementById('nextPayCountdown').textContent = next ? `${daysToNext}d` : '—';
+  document.getElementById('monthSpent').textContent = fmt(monthSpent);
+
+  document.getElementById('funUsed').textContent = fmt(weekSpent);
+  document.getElementById('funBar').style.width = Math.min(100, (weekSpent / (state.income.funMoney || 1)) * 100) + '%';
+  document.getElementById('billsDueSoon').textContent = fmt(billsTotal);
+  document.getElementById('billsBar').style.width = Math.min(100, (billsTotal / (state.income.paycheck || 1)) * 100) + '%';
+
+  document.getElementById('billsCount').textContent = `${upcomingBills.length} ahead`;
+
+  // Upcoming bills list
+  const ubEl = document.getElementById('upcomingBills');
+  if (!upcomingBills.length) {
+    ubEl.innerHTML = '<div class="empty"><div class="msg">all clear ahead</div></div>';
+  } else {
+    ubEl.innerHTML = upcomingBills.slice(0, 5).map(b => {
+      const due = nextDueDate(b.dueDay);
+      const days = daysBetween(todayD, due);
+      const cls = days <= 3 ? 'urgent' : days <= 7 ? 'warning' : 'safe';
+      return `<div class="list-item ${cls}" onclick="toggleBillPaid('${b.id}')">
+        <div class="icon">⌖</div>
+        <div class="body">
+          <div class="title">${escapeHtml(b.name)}</div>
+          <div class="sub">due in ${days}d · ${due.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+        </div>
+        <div class="amount blood">${fmt(b.amount)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Recent activity (last 7 days)
+  const sevenAgo = new Date(todayD); sevenAgo.setDate(sevenAgo.getDate() - 7);
+  const recent = state.transactions
+    .filter(t => parseDate(t.date) >= sevenAgo)
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, 6);
+
+  const raEl = document.getElementById('recentActivity');
+  if (!recent.length) {
+    raEl.innerHTML = '<div class="empty"><div class="msg">no recent activity</div></div>';
+  } else {
+    raEl.innerHTML = recent.map(t => {
+      const cat = categoryDisplay(t.category);
+      return `<div class="list-item">
+        <div class="icon">${cat.icon}</div>
+        <div class="body">
+          <div class="title">${escapeHtml(t.note || cat.label)}</div>
+          <div class="sub">${cat.label} · ${formatRelDate(t.date)}</div>
+        </div>
+        <div class="amount ${t.type === 'income' ? 'moss' : ''}">${t.type === 'income' ? '+' : ''}${fmt(t.amount)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Daily insights
+  renderDailyInsights(weekSpent, billsTotal, safeRaw);
+}
+
+function renderDailyInsights(weekSpent, billsTotal, safeRaw) {
+  const el = document.getElementById('dailyInsights');
+  const insights = [];
+  const fun = state.income.funMoney || 0;
+
+  if (safeRaw < 0) {
+    insights.push({ type: 'warn', title: 'Tight Week', text: `You're over by ${fmt(Math.abs(safeRaw))}. Pull from buffer or cut spending until next paycheck.` });
+  }
+
+  // S/O birthday check
+  const soGoal = state.goals.find(g => g.name.toLowerCase().includes('s/o') || g.name.toLowerCase().includes('birthday'));
+  if (soGoal && soGoal.targetDate) {
+    const days = daysBetween(today(), parseDate(soGoal.targetDate));
+    const remaining = soGoal.target - soGoal.current;
+    if (days > 0 && remaining > 0) {
+      const paychecksLeft = paychecksUntil(soGoal.targetDate);
+      const perPay = paychecksLeft > 0 ? remaining / paychecksLeft : remaining;
+      insights.push({ type: '', title: `${soGoal.name}`, text: `${days}d away · ${fmt(remaining)} to go · ${fmt(perPay)}/paycheck` });
+    }
+  }
+
+  // Fun money pace
+  const dayOfWeek = today().getDay();
+  const expectedSpend = (fun / 7) * (dayOfWeek + 1);
+  if (weekSpent > expectedSpend * 1.3 && weekSpent > 0) {
+    insights.push({ type: 'warn', title: 'Spending Hot', text: `You've burned ${fmt(weekSpent)} of ${fmt(fun)} this week. Pace slower.` });
+  } else if (weekSpent < expectedSpend * 0.6 && dayOfWeek >= 3) {
+    insights.push({ type: 'good', title: 'Holding Strong', text: `Only ${fmt(weekSpent)} this week. Solid discipline.` });
+  }
+
+  // Debt status
+  const totalDebt = state.debts.reduce((s, d) => s + d.balance, 0);
+  if (totalDebt === 0 && state.debts.length === 0) {
+    // first run, no debts
+  } else if (totalDebt === 0) {
+    insights.push({ type: 'good', title: 'Debt Free', text: 'No active debt. Channel that energy into savings.' });
+  }
+
+  if (!insights.length) {
+    insights.push({ type: '', title: 'Steady', text: 'Nothing alarming. Keep logging. Awareness is the whole game.' });
+  }
+
+  el.innerHTML = insights.map(i => `
+    <div class="insight ${i.type}">
+      <strong>${i.title}.</strong> ${i.text}
+    </div>
+  `).join('');
+}
+
+/* -------------------- Paycheck -------------------- */
+function renderPaycheck() {
+  const next = nextPaycheckDate();
+  if (next) {
+    const days = daysBetween(today(), next);
+    document.getElementById('nextPayDate').textContent = next.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    document.getElementById('nextPayAmount').textContent = fmt(state.income.paycheck);
+    document.getElementById('nextPayCountdownTxt').textContent = days === 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`;
+  }
+
+  const alloc = buildAllocation();
+  const wfEl = document.getElementById('waterfall');
+  let html = '';
+  html += `<div class="waterfall-row total"><div class="label">Paycheck<small>incoming</small></div><div class="amt">${fmt(alloc.paycheck)}</div></div>`;
+  html += `<div class="waterfall-row bills"><div class="label">Bills<small>monthly obligations / paychecks</small></div><div class="amt">−${fmt(alloc.bills)}</div></div>`;
+  html += `<div class="waterfall-row debt"><div class="label">Debt Payments<small>minimums + extra</small></div><div class="amt">−${fmt(alloc.debtMin + alloc.debtExtra)}</div></div>`;
+  html += `<div class="waterfall-row savings"><div class="label">Savings Goals<small>${state.goals.filter(g => g.targetDate).length} dated goal(s)</small></div><div class="amt">−${fmt(alloc.goals)}</div></div>`;
+  html += `<div class="waterfall-row buffer"><div class="label">Oh Shit Buffer<small>for surprises</small></div><div class="amt">−${fmt(alloc.buffer)}</div></div>`;
+  html += `<div class="waterfall-row fun"><div class="label">Fun Money<small>weeks of allowance</small></div><div class="amt">−${fmt(alloc.fun)}</div></div>`;
+  html += `<div class="waterfall-row total"><div class="label">${alloc.healthy ? 'Leftover' : 'SHORT'}<small>${alloc.healthy ? 'into general fund' : 'allocation exceeds paycheck'}</small></div><div class="amt" style="${!alloc.healthy ? 'color: var(--blood-bright) !important;' : ''}">${alloc.healthy ? '' : '−'}${fmt(Math.abs(alloc.leftover))}</div></div>`;
+  wfEl.innerHTML = html;
+
+  // History
+  const histEl = document.getElementById('paycheckHistory');
+  const hist = [...state.paychecksReceived].sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
+  if (!hist.length) {
+    histEl.innerHTML = '<div class="empty"><div class="msg">no paychecks logged yet</div></div>';
+  } else {
+    histEl.innerHTML = hist.map(p => `
+      <div class="list-item">
+        <div class="icon">✦</div>
+        <div class="body">
+          <div class="title">Paycheck</div>
+          <div class="sub">${parseDate(p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+        </div>
+        <div class="amount moss">+${fmt(p.amount)}</div>
+      </div>
+    `).join('');
+  }
+}
+
+/* -------------------- Bills -------------------- */
+function renderBills() {
+  const monthKey = today().toISOString().slice(0,7);
+  const totalMonthly = state.bills.reduce((s, b) => s + b.amount, 0);
+  const paid = state.bills.filter(b => (b.paidMonths || []).includes(monthKey)).reduce((s, b) => s + b.amount, 0);
+
+  document.getElementById('totalMonthlyBills').textContent = fmt(totalMonthly);
+  document.getElementById('paidThisMonth').textContent = fmt(paid);
+
+  // List sorted by upcoming due date
+  const sorted = [...state.bills].sort((a, b) => {
+    const da = nextDueDate(a.dueDay);
+    const db = nextDueDate(b.dueDay);
+    return da - db;
+  });
+
+  const el = document.getElementById('billsList');
+  if (!sorted.length) {
+    el.innerHTML = '<div class="empty"><div class="msg">no bills tracked yet</div><div class="card-label">tap + above to add</div></div>';
+  } else {
+    el.innerHTML = sorted.map(b => {
+      const due = nextDueDate(b.dueDay);
+      const days = daysBetween(today(), due);
+      const isPaid = (b.paidMonths || []).includes(monthKey);
+      const cls = isPaid ? 'paid' : days <= 3 ? 'urgent' : days <= 7 ? 'warning' : 'safe';
+      return `<div class="list-item ${cls}">
+        <div class="icon" onclick="toggleBillPaid('${b.id}'); event.stopPropagation();" style="cursor: pointer;">${isPaid ? '✓' : '⌖'}</div>
+        <div class="body" onclick="openBillModal(state.bills.find(x => x.id === '${b.id}'))">
+          <div class="title">${escapeHtml(b.name)}</div>
+          <div class="sub">${b.category} · day ${b.dueDay} · ${isPaid ? 'paid' : `${days}d`}</div>
+        </div>
+        <div class="amount blood" onclick="openBillModal(state.bills.find(x => x.id === '${b.id}'))">${fmt(b.amount)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Calendar
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const t = today();
+  const year = t.getFullYear(); const month = t.getMonth();
+  document.getElementById('calMonthLabel').textContent = t.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  const grid = document.getElementById('calGrid');
+  let html = '';
+  for (let i = 0; i < firstDay; i++) html += '<div></div>';
+  for (let d = 1; d <= lastDate; d++) {
+    const billsToday = state.bills.filter(b => b.dueDay === d);
+    const isToday = d === t.getDate();
+    const cls = (billsToday.length ? 'has-bill ' : '') + (isToday ? 'today' : '');
+    html += `<div class="cal-day ${cls}">${d}${billsToday.length ? '<div class="dot"></div>' : ''}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+/* -------------------- Debt -------------------- */
+function renderDebt() {
+  const active = state.debts.filter(d => d.type !== 'collection');
+  const collections = state.debts.filter(d => d.type === 'collection');
+  const totalDebt = state.debts.reduce((s, d) => s + d.balance, 0);
+  const ccTotal = state.debts.filter(d => d.type === 'credit_card').reduce((s, d) => s + d.balance, 0);
+  const colTotal = collections.reduce((s, d) => s + d.balance, 0);
+
+  document.getElementById('totalDebt').textContent = fmtShort(totalDebt);
+  document.getElementById('ccTotal').textContent = fmtShort(ccTotal);
+  document.getElementById('collectionsTotal').textContent = fmtShort(colTotal);
+
+  // Debt-free projection
+  const proj = debtFreeProjection();
+  const dfEl = document.getElementById('debtFreeDate');
+  if (!active.length) {
+    dfEl.textContent = 'no active debts';
+  } else if (!proj || proj.infinite) {
+    dfEl.textContent = 'minimums won\'t pay it off — add extra';
+  } else {
+    dfEl.textContent = `debt-free ${proj.date.toLocaleDateString('en-US', {month: 'short', year: 'numeric'})} · ${proj.months} months`;
+  }
+
+  // Strategy
+  const stratEl = document.getElementById('debtStrategy');
+  if (!active.length && !collections.length) {
+    stratEl.innerHTML = '';
+  } else {
+    let stratHtml = '';
+    if (active.length) {
+      const ccs = active.filter(d => d.type === 'credit_card').sort((a, b) => a.balance - b.balance);
+      if (ccs.length) {
+        stratHtml += `<div class="insight">
+          <strong>Snowball Cards.</strong> Pay minimums on everything. Throw all extra at <strong style="color: var(--blood-bright)">${escapeHtml(ccs[0].name)}</strong> (smallest CC: ${fmt(ccs[0].balance)}). Each card cleared = quick win + utilization improvement = credit score boost.
+        </div>`;
+      }
+      const al = active.filter(d => d.type === 'auto_loan' || d.type === 'student_loan');
+      if (al.length) {
+        stratHtml += `<div class="insight">
+          <strong>Loans on Autopilot.</strong> Pay minimums on student & auto loans. They have lower APR than CCs and don't hurt utilization. Don't throw extra here while CCs exist.
+        </div>`;
+      }
+    }
+    if (collections.length) {
+      stratHtml += `<div class="insight warn">
+        <strong>Collections.</strong> Don't pay these blindly — they're often negotiable. Try "pay-for-delete" letters offering 30-50% in exchange for removal from credit report. Get any agreement IN WRITING before paying. Paying without negotiating can reset the 7-year clock.
+      </div>`;
+    }
+    stratEl.innerHTML = stratHtml;
+  }
+
+  // Active debts list
+  const dlEl = document.getElementById('debtList');
+  if (!active.length) {
+    dlEl.innerHTML = '<div class="empty"><div class="msg">no active debts tracked</div></div>';
+  } else {
+    dlEl.innerHTML = active.map(d => {
+      const pct = d.originalBalance ? ((d.originalBalance - d.balance) / d.originalBalance) * 100 : 0;
+      return `<div class="card" style="cursor: pointer;" onclick="openDebtModal(state.debts.find(x => x.id === '${d.id}'))">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div style="flex: 1;">
+            <div style="font-weight: 600; color: var(--ink); font-size: 15px;">${escapeHtml(d.name)}</div>
+            <div style="font-size: 11px; color: var(--ink-faint); margin-top: 2px; letter-spacing: 0.05em;">${d.type.replace('_', ' ')} · ${d.apr}% APR · min ${fmt(d.minimum)}</div>
+          </div>
+          <div style="font-family: 'JetBrains Mono', monospace; color: var(--blood-bright); font-size: 17px; font-weight: 500;">${fmt(d.balance)}</div>
+        </div>
+        ${pct > 0 ? `<div class="progress"><div class="moss" style="width: ${pct}%"></div></div>
+        <div style="font-size: 11px; color: var(--ink-faint); margin-top: 2px;">${pct.toFixed(0)}% paid down · originally ${fmt(d.originalBalance)}</div>` : ''}
+        <button class="btn small" style="margin-top: 10px;" onclick="event.stopPropagation(); openDebtPayModal(state.debts.find(x => x.id === '${d.id}'))">Log Payment</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Collections
+  const colEl = document.getElementById('collectionsList');
+  if (!collections.length) {
+    colEl.innerHTML = '<div class="empty"><div class="msg">no collections tracked</div></div>';
+  } else {
+    colEl.innerHTML = collections.map(d => `
+      <div class="collection-row">
+        <div class="top">
+          <div class="name">${escapeHtml(d.name)}</div>
+          <div class="amount">${fmt(d.balance)}</div>
+        </div>
+        <div class="tip">Try a pay-for-delete letter offering 30-50% (${fmt(d.balance * 0.4)}) for removal from credit report. Always get agreement in writing.</div>
+        <div class="actions">
+          <button class="btn small" onclick="openDebtModal(state.debts.find(x => x.id === '${d.id}'))">Edit</button>
+          <button class="btn small" onclick="openDebtPayModal(state.debts.find(x => x.id === '${d.id}'))">Log Settlement</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Credit score
+  const latestScore = state.creditScores.length ? state.creditScores[state.creditScores.length-1].score : null;
+  document.getElementById('creditScore').textContent = latestScore || '—';
+  renderCreditChart();
+}
+
+function renderCreditChart() {
+  const ctx = document.getElementById('creditChart');
+  if (!ctx) return;
+  if (charts.credit) charts.credit.destroy();
+  if (!state.creditScores.length) {
+    ctx.style.display = 'none'; return;
+  }
+  ctx.style.display = 'block';
+  const sorted = [...state.creditScores].sort((a, b) => parseDate(a.date) - parseDate(b.date));
+  charts.credit = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sorted.map(s => parseDate(s.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})),
+      datasets: [{
+        data: sorted.map(s => s.score),
+        borderColor: '#d4a341',
+        backgroundColor: 'rgba(212, 163, 65, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 4,
+        pointBackgroundColor: '#d4a341',
+        pointBorderColor: '#0a0808',
+        pointBorderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          min: Math.max(300, Math.min(...sorted.map(s => s.score)) - 30),
+          max: Math.min(850, Math.max(...sorted.map(s => s.score)) + 30),
+          grid: { color: 'rgba(232, 224, 212, 0.05)' },
+          ticks: { color: '#a89e91', font: { size: 10 } }
+        },
+        x: { grid: { display: false }, ticks: { color: '#a89e91', font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+/* -------------------- Goals -------------------- */
+function renderGoals() {
+  const totalSaved = state.goals.reduce((s, g) => s + g.current, 0);
+  document.getElementById('totalSaved').textContent = fmtShort(totalSaved);
+
+  const onPace = state.goals.filter(g => isOnPace(g)).length;
+  document.getElementById('totalGoalsSub').textContent = `${onPace} of ${state.goals.length} on pace`;
+
+  const el = document.getElementById('goalsList');
+  if (!state.goals.length) {
+    el.innerHTML = '<div class="empty"><div class="msg">no goals set yet</div><div class="card-label">tap + above to add</div></div>';
+  } else {
+    el.innerHTML = state.goals.map(g => {
+      const pct = g.target ? Math.min(100, (g.current / g.target) * 100) : 0;
+      const remaining = Math.max(0, g.target - g.current);
+      let dateInfo = '';
+      let paceInfo = '';
+      let paceClass = '';
+      if (g.targetDate) {
+        const days = daysBetween(today(), parseDate(g.targetDate));
+        const paychecksLeft = paychecksUntil(g.targetDate);
+        const perPay = paychecksLeft > 0 ? remaining / paychecksLeft : remaining;
+        dateInfo = ` · ${parseDate(g.targetDate).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}`;
+        if (days < 0) {
+          paceInfo = `Past target date`;
+          paceClass = 'warn';
+        } else if (g.current >= g.target) {
+          paceInfo = `Reached!`;
+          paceClass = 'good';
+        } else {
+          paceInfo = `${days}d left · ${fmt(perPay)}/paycheck`;
+          paceClass = isOnPace(g) ? 'good' : 'warn';
+        }
+      }
+      const barClass = pct >= 100 ? 'moss' : '';
+      return `<div class="card" style="cursor: pointer;" onclick="openGoalModal(state.goals.find(x => x.id === '${g.id}'))">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div style="flex: 1;">
+            <div style="font-weight: 600; color: var(--ink); font-size: 15px;">${escapeHtml(g.name)}</div>
+            <div style="font-size: 11px; color: var(--ink-faint); margin-top: 2px;">priority: ${g.priority === 3 ? 'high' : g.priority === 2 ? 'medium' : 'low'}${dateInfo}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-family: 'JetBrains Mono', monospace; color: var(--candle); font-size: 16px;">${fmt(g.current)}</div>
+            <div style="font-size: 11px; color: var(--ink-faint);">of ${fmt(g.target)}</div>
+          </div>
+        </div>
+        <div class="progress"><div class="${barClass}" style="width: ${pct}%"></div></div>
+        ${paceInfo ? `<div class="insight ${paceClass}" style="margin: 8px 0 0; padding: 8px 12px; font-size: 12px;">${paceInfo}</div>` : ''}
+        <button class="btn small" style="margin-top: 10px;" onclick="event.stopPropagation(); openGoalContribModal(state.goals.find(x => x.id === '${g.id}'))">Contribute</button>
+      </div>`;
+    }).join('');
+  }
+}
+
+function isOnPace(g) {
+  if (!g.targetDate) return g.current >= g.target;
+  if (g.current >= g.target) return true;
+  const t = today();
+  const target = parseDate(g.targetDate);
+  const totalDays = (g.contributions && g.contributions.length) ? daysBetween(parseDate(g.contributions[0].date), target) : daysBetween(t, target);
+  if (totalDays <= 0) return g.current >= g.target;
+  const elapsedFraction = 1 - (daysBetween(t, target) / totalDays);
+  const expectedProgress = g.target * elapsedFraction;
+  return g.current >= expectedProgress;
+}
+
+/* -------------------- Insights -------------------- */
+function renderInsights() {
+  renderCharts();
+
+  // Weekly review
+  const weekStart = startOfWeek(today());
+  const weekTx = state.transactions.filter(t => t.type === 'expense' && parseDate(t.date) >= weekStart);
+  const weekTotal = weekTx.reduce((s, t) => s + t.amount, 0);
+  const fun = state.income.funMoney || 0;
+
+  const el = document.getElementById('weeklyReview');
+  const items = [];
+
+  if (weekTotal > 0) {
+    const byCat = {};
+    weekTx.forEach(t => { byCat[t.category] = (byCat[t.category] || 0) + t.amount; });
+    const top = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
+    if (top) {
+      const cat = categoryDisplay(top[0]);
+      items.push({ type: '', title: 'Top Category', text: `<strong>${cat.label}</strong> at ${fmt(top[1])} (${((top[1]/weekTotal)*100).toFixed(0)}% of week's spending).` });
+    }
+    const pct = (weekTotal / fun) * 100;
+    if (pct > 100) items.push({ type: 'warn', title: 'Over Budget', text: `Spent ${fmt(weekTotal)} of ${fmt(fun)} fun money. ${(pct-100).toFixed(0)}% over.` });
+    else if (pct > 80) items.push({ type: '', title: 'Tight', text: `${pct.toFixed(0)}% of fun money used. Save the rest for the weekend.` });
+    else items.push({ type: 'good', title: 'On Track', text: `${pct.toFixed(0)}% of fun money used. Healthy pace.` });
+  }
+
+  // Compare to last week
+  const lastWeekStart = new Date(weekStart); lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+  const lastWeekEnd = new Date(weekStart); lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
+  const lastWeek = state.transactions.filter(t => t.type === 'expense' && parseDate(t.date) >= lastWeekStart && parseDate(t.date) <= lastWeekEnd)
+    .reduce((s, t) => s + t.amount, 0);
+  if (lastWeek > 0 && weekTotal > 0) {
+    const diff = weekTotal - lastWeek;
+    const pct = (diff / lastWeek) * 100;
+    if (Math.abs(pct) > 15) {
+      items.push({
+        type: pct > 0 ? 'warn' : 'good',
+        title: pct > 0 ? 'Spending Up' : 'Spending Down',
+        text: `${Math.abs(pct).toFixed(0)}% ${pct > 0 ? 'more' : 'less'} than last week (${fmt(lastWeek)} → ${fmt(weekTotal)}).`
+      });
+    }
+  }
+
+  if (!items.length) items.push({ type: '', title: 'Nothing to Read', text: 'Log some transactions to see patterns.' });
+  el.innerHTML = items.map(i => `<div class="insight ${i.type}"><strong>${i.title}.</strong> ${i.text}</div>`).join('');
+}
+
+function renderCharts() {
+  const t = today();
+  // Week chart - last 7 days
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(t); d.setDate(d.getDate() - i);
+    const ds = dateStr(d);
+    const total = state.transactions.filter(tx => tx.type === 'expense' && tx.date === ds).reduce((s, tx) => s + tx.amount, 0);
+    days.push({ label: d.toLocaleDateString('en-US', { weekday: 'short' }), value: total });
+  }
+  if (charts.week) charts.week.destroy();
+  charts.week = new Chart(document.getElementById('weekChart'), {
+    type: 'bar',
+    data: {
+      labels: days.map(d => d.label),
+      datasets: [{
+        data: days.map(d => d.value),
+        backgroundColor: 'rgba(212, 163, 65, 0.7)',
+        borderColor: '#d4a341',
+        borderWidth: 1,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: 'rgba(232, 224, 212, 0.05)' }, ticks: { color: '#a89e91', font: { size: 10 }, callback: v => '$' + v } },
+        x: { grid: { display: false }, ticks: { color: '#a89e91', font: { size: 10 } } }
+      }
+    }
+  });
+
+  // Category chart - last 30 days
+  const monthAgo = new Date(t); monthAgo.setDate(monthAgo.getDate() - 30);
+  const byCat = {};
+  state.transactions.filter(tx => tx.type === 'expense' && parseDate(tx.date) >= monthAgo)
+    .forEach(tx => { byCat[tx.category] = (byCat[tx.category] || 0) + tx.amount; });
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  if (charts.cat) charts.cat.destroy();
+  if (cats.length) {
+    const palette = ['#a83232', '#d4a341', '#b8693a', '#6b8e4e', '#8a6a28', '#6a1f1f', '#8eb56a', '#3d3431'];
+    charts.cat = new Chart(document.getElementById('catChart'), {
+      type: 'doughnut',
+      data: {
+        labels: cats.map(c => categoryDisplay(c[0]).label),
+        datasets: [{
+          data: cats.map(c => c[1]),
+          backgroundColor: palette.slice(0, cats.length),
+          borderColor: '#0a0808',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: { color: '#a89e91', font: { size: 11 }, boxWidth: 12, padding: 8 }
+          }
+        }
+      }
+    });
+  }
+}
+
+/* -------------------- Settings -------------------- */
+function renderSettings() {
+  document.getElementById('setPaycheck').textContent = fmt(state.income.paycheck);
+  const fmap = { biweekly: 'bi-weekly', weekly: 'weekly', semimonthly: 'twice / mo', monthly: 'monthly' };
+  document.getElementById('setFrequency').textContent = fmap[state.income.frequency];
+  document.getElementById('setFun').textContent = fmt(state.income.funMoney);
+  document.getElementById('setBuffer').textContent = fmt(state.income.buffer);
+
+  // Snapshots list
+  const sEl = document.getElementById('snapshotsList');
+  if (!state.snapshots.length) {
+    sEl.innerHTML = '<div style="font-size: 12px; color: var(--ink-faint); font-style: italic;">no snapshots yet</div>';
+  } else {
+    sEl.innerHTML = [...state.snapshots].reverse().slice(0, 5).map(s => `
+      <div class="list-item">
+        <div class="icon">◈</div>
+        <div class="body">
+          <div class="title">${parseDate(s.date).toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'})}</div>
+          <div class="sub">debt ${fmt(s.totalDebt)} · saved ${fmt(s.totalSaved)}${s.creditScore ? ' · score ' + s.creditScore : ''}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+/* -------------------- Helpers -------------------- */
+function categoryDisplay(cat) {
+  const map = {
+    bar: { label: 'Bar / Drinks', icon: '◯' },
+    'takeout-so': { label: 'Takeout · S/O', icon: '♥' },
+    'takeout-cw': { label: 'Takeout · CW', icon: '⌬' },
+    'takeout-solo': { label: 'Takeout · Solo', icon: '◇' },
+    cigs: { label: 'Smokes', icon: '☁' },
+    groceries: { label: 'Groceries', icon: '⌘' },
+    gas: { label: 'Gas', icon: '⛽' },
+    entertainment: { label: 'Entertainment', icon: '✦' },
+    misc: { label: 'Misc', icon: '◐' },
+    income: { label: 'Income', icon: '+' },
+  };
+  return map[cat] || { label: cat, icon: '•' };
+}
+
+function escapeHtml(s) { return (s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function formatRelDate(s) {
+  const d = parseDate(s);
+  const t = today();
+  const diff = daysBetween(d, t);
+  if (diff === 0) return 'today';
+  if (diff === 1) return 'yesterday';
+  if (diff < 7) return diff + 'd ago';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/* -------------------- Init -------------------- */
+load();
+checkOnboard();
+if (state.initialized) renderAll();
+
+// Tagline rotates
+const taglines = [
+  'what is owed must be reckoned',
+  'memento solvere',
+  'the ledger does not forget',
+  'every coin counted, every debt named',
+  'discipline is the wage of freedom',
+];
+document.getElementById('tagline').textContent = taglines[Math.floor(Math.random() * taglines.length)];
+
+// Service worker registration for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
