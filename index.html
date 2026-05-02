@@ -1117,19 +1117,38 @@
 <div class="modal-bg" id="billModal">
   <div class="modal">
     <div class="modal-title" id="billModalTitle">Add Bill</div>
-    <div class="modal-sub">recurring obligations</div>
+    <div class="modal-sub">obligations & due dates</div>
     <input type="hidden" id="bill-id" />
+
+    <div class="field">
+      <label>Type</label>
+      <div class="chips" id="billTypeChips">
+        <span class="chip active" data-bill-type="recurring">Recurring Monthly</span>
+        <span class="chip" data-bill-type="oneoff">One-Time / Past Due</span>
+      </div>
+    </div>
+
     <div class="field">
       <label>Name</label>
-      <input id="bill-name" type="text" placeholder="e.g. Rent, Electric, Spotify" />
+      <input id="bill-name" type="text" placeholder="e.g. Rent, Geico, Electric" />
     </div>
     <div class="field">
       <label>Amount</label>
       <input id="bill-amount" type="number" step="0.01" />
     </div>
-    <div class="field">
+    <div class="field" id="billDayField">
       <label>Due day of month</label>
       <input id="bill-day" type="number" min="1" max="31" placeholder="1-31" />
+      <small style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;">
+        For recurring monthly bills only.
+      </small>
+    </div>
+    <div class="field" id="billDueDateField" style="display: none;">
+      <label>Due date</label>
+      <input id="bill-duedate" type="date" />
+      <small style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;">
+        If past, this will be flagged as past-due immediately.
+      </small>
     </div>
     <div class="field">
       <label>Category</label>
@@ -1140,6 +1159,7 @@
         <option value="loan">Loan</option>
         <option value="subscription">Subscription</option>
         <option value="phone">Phone</option>
+        <option value="medical">Medical</option>
         <option value="other">Other</option>
       </select>
     </div>
@@ -1147,6 +1167,49 @@
       <button class="btn danger" id="bill-delete-btn" onclick="deleteBill()" style="display: none;">Delete</button>
       <button class="btn" onclick="closeModal('billModal')">Cancel</button>
       <button class="btn primary" onclick="saveBill()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- BILL PAYMENT MODAL -->
+<div class="modal-bg" id="billPayModal">
+  <div class="modal">
+    <div class="modal-title">Log Bill Payment</div>
+    <div class="modal-sub" id="billPayName">—</div>
+    <input type="hidden" id="billpay-id" />
+    <input type="hidden" id="billpay-month" />
+
+    <div class="field">
+      <label>Status for this period</label>
+      <div class="chips" id="billPayStatusChips">
+        <span class="chip" data-pay-status="paid">Paid in Full</span>
+        <span class="chip" data-pay-status="partial">Partial Payment</span>
+        <span class="chip" data-pay-status="unpaid">Unpaid</span>
+      </div>
+    </div>
+
+    <div class="field" id="billPayAmountField">
+      <label>Amount paid</label>
+      <input id="billpay-amount" type="number" step="0.01" />
+      <small id="billPayHint" style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;"></small>
+    </div>
+
+    <div class="field">
+      <label>Late fee added <small style="color: var(--ink-faint); text-transform: none; letter-spacing: 0; font-weight: normal;">(optional)</small></label>
+      <input id="billpay-latefee" type="number" step="0.01" placeholder="0.00" />
+    </div>
+
+    <div class="field">
+      <label>This month's amount <small style="color: var(--ink-faint); text-transform: none; letter-spacing: 0; font-weight: normal;">(if different from default)</small></label>
+      <input id="billpay-override" type="number" step="0.01" />
+      <small style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;">
+        e.g. utility bill higher this month. Only changes this period.
+      </small>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('billPayModal')">Cancel</button>
+      <button class="btn primary" onclick="saveBillPayment()">Save</button>
     </div>
   </div>
 </div>
@@ -1376,8 +1439,31 @@ function load() {
     if (raw) {
       const parsed = JSON.parse(raw);
       state = { ...state, ...parsed };
+      migrateBills();
     }
   } catch (e) { console.error(e); }
+}
+
+/* Migrate old paidMonths array to new payments object structure */
+function migrateBills() {
+  let migrated = false;
+  state.bills = (state.bills || []).map(b => {
+    if (!b.billType) {
+      b.billType = 'recurring';
+      migrated = true;
+    }
+    if (b.paidMonths && !b.payments) {
+      b.payments = {};
+      b.paidMonths.forEach(m => {
+        b.payments[m] = { status: 'paid', paidAmount: b.amount, lateFee: 0, timestamp: Date.now() };
+      });
+      delete b.paidMonths;
+      migrated = true;
+    }
+    if (!b.payments) b.payments = {};
+    return b;
+  });
+  if (migrated) save();
 }
 
 /* -------------------- Utilities -------------------- */
@@ -1455,8 +1541,11 @@ function buildAllocation() {
   const pay = state.income.paycheck || 0;
   const freqMult = { weekly: 1/4.333, biweekly: 1/2.167, semimonthly: 0.5, monthly: 1 }[state.income.frequency] || 1/2.167;
 
-  // Bills per paycheck
-  const monthlyBills = state.bills.reduce((s, b) => s + b.amount, 0);
+  // Bills per paycheck — use this month's effective amount for recurring bills
+  const monthKey = today().toISOString().slice(0, 7);
+  const monthlyBills = state.bills
+    .filter(b => b.billType === 'recurring' || !b.billType)
+    .reduce((s, b) => s + billEffectiveAmount(b, monthKey), 0);
   const billsPerPay = monthlyBills * freqMult;
 
   // Debt minimums
@@ -1619,24 +1708,69 @@ function openBillModal(bill) {
   document.getElementById('bill-name').value = bill?.name || '';
   document.getElementById('bill-amount').value = bill?.amount || '';
   document.getElementById('bill-day').value = bill?.dueDay || '';
+  document.getElementById('bill-duedate').value = bill?.dueDate || '';
   document.getElementById('bill-category').value = bill?.category || 'housing';
   document.getElementById('bill-delete-btn').style.display = bill ? 'inline-block' : 'none';
+
+  // Set type chip
+  const billType = bill?.billType || 'recurring';
+  document.querySelectorAll('[data-bill-type]').forEach(c => c.classList.toggle('active', c.dataset.billType === billType));
+  toggleBillTypeFields(billType);
+
   openModal('billModal');
 }
 
+function toggleBillTypeFields(type) {
+  document.getElementById('billDayField').style.display = type === 'recurring' ? 'block' : 'none';
+  document.getElementById('billDueDateField').style.display = type === 'oneoff' ? 'block' : 'none';
+}
+
+// Wire up type chip toggle
+document.addEventListener('click', e => {
+  if (e.target.dataset && e.target.dataset.billType) {
+    document.querySelectorAll('[data-bill-type]').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    toggleBillTypeFields(e.target.dataset.billType);
+  }
+});
+
 function saveBill() {
   const id = document.getElementById('bill-id').value;
+  const billType = document.querySelector('[data-bill-type].active')?.dataset.billType || 'recurring';
   const name = document.getElementById('bill-name').value.trim();
   const amount = parseFloat(document.getElementById('bill-amount').value);
-  const day = parseInt(document.getElementById('bill-day').value);
   const cat = document.getElementById('bill-category').value;
-  if (!name || !amount || !day) { toast('Fill all fields'); return; }
-  if (id) {
-    const idx = state.bills.findIndex(b => b.id === id);
-    if (idx >= 0) state.bills[idx] = { ...state.bills[idx], name, amount, dueDay: day, category: cat };
+
+  if (!name || !amount) { toast('Name and amount required'); return; }
+
+  if (billType === 'recurring') {
+    const day = parseInt(document.getElementById('bill-day').value);
+    if (!day) { toast('Due day required for recurring'); return; }
+    if (id) {
+      const idx = state.bills.findIndex(b => b.id === id);
+      if (idx >= 0) state.bills[idx] = { ...state.bills[idx], name, amount, dueDay: day, category: cat, billType: 'recurring' };
+    } else {
+      state.bills.push({
+        id: uid(), billType: 'recurring',
+        name, amount, dueDay: day, category: cat,
+        payments: {}, // keyed by YYYY-MM: { status, paidAmount, lateFee, override }
+      });
+    }
   } else {
-    state.bills.push({ id: uid(), name, amount, dueDay: day, category: cat, paidMonths: [] });
+    const dueDate = document.getElementById('bill-duedate').value;
+    if (!dueDate) { toast('Due date required'); return; }
+    if (id) {
+      const idx = state.bills.findIndex(b => b.id === id);
+      if (idx >= 0) state.bills[idx] = { ...state.bills[idx], name, amount, dueDate, category: cat, billType: 'oneoff' };
+    } else {
+      state.bills.push({
+        id: uid(), billType: 'oneoff',
+        name, amount, dueDate, category: cat,
+        payments: {}, // keyed by 'oneoff'
+      });
+    }
   }
+
   save();
   closeModal('billModal');
   renderAll();
@@ -1653,23 +1787,149 @@ function deleteBill() {
   toast('Bill removed');
 }
 
+/* New: get the period key for a bill (YYYY-MM for recurring, 'oneoff' for one-off) */
+function billPeriodKey(bill, refDate) {
+  if (bill.billType === 'oneoff') return 'oneoff';
+  const d = refDate || today();
+  return d.toISOString().slice(0, 7);
+}
+
+/* New: get the effective amount for this period (override or default) */
+function billEffectiveAmount(bill, periodKey) {
+  const pk = periodKey || billPeriodKey(bill);
+  const p = bill.payments?.[pk];
+  return (p?.override ?? bill.amount) + (p?.lateFee || 0);
+}
+
+/* New: get payment status for this period */
+function billStatus(bill, periodKey) {
+  const pk = periodKey || billPeriodKey(bill);
+  const p = bill.payments?.[pk];
+  if (!p || p.status === 'unpaid') return { status: 'unpaid', paid: 0, remaining: billEffectiveAmount(bill, pk) };
+  if (p.status === 'paid') return { status: 'paid', paid: billEffectiveAmount(bill, pk), remaining: 0 };
+  if (p.status === 'partial') {
+    const eff = billEffectiveAmount(bill, pk);
+    const paid = p.paidAmount || 0;
+    return { status: 'partial', paid, remaining: Math.max(0, eff - paid) };
+  }
+  return { status: 'unpaid', paid: 0, remaining: billEffectiveAmount(bill, pk) };
+}
+
+/* New: is this bill currently past due? */
+function billIsPastDue(bill) {
+  const t = today();
+  const status = billStatus(bill);
+  if (status.status === 'paid') return false;
+
+  if (bill.billType === 'oneoff') {
+    return parseDate(bill.dueDate) < t;
+  } else {
+    // For recurring: past due if this month's due day has passed and unpaid
+    const dueThisMonth = new Date(t.getFullYear(), t.getMonth(), bill.dueDay);
+    return dueThisMonth < t;
+  }
+}
+
+function openBillPayModal(bill) {
+  const pk = billPeriodKey(bill);
+  const p = bill.payments?.[pk] || {};
+  const status = billStatus(bill);
+
+  document.getElementById('billpay-id').value = bill.id;
+  document.getElementById('billpay-month').value = pk;
+
+  let nameLabel = bill.name + ' · ' + (bill.billType === 'oneoff' ? 'one-time' : pk);
+  if (status.remaining > 0 && status.paid > 0) {
+    nameLabel += ` · ${fmt(status.paid)} paid, ${fmt(status.remaining)} left`;
+  }
+  document.getElementById('billPayName').textContent = nameLabel;
+
+  document.getElementById('billpay-amount').value = p.paidAmount || '';
+  document.getElementById('billpay-latefee').value = p.lateFee || '';
+  document.getElementById('billpay-override').value = p.override || '';
+
+  // Default status chip
+  const curStatus = p.status || (billIsPastDue(bill) ? 'unpaid' : 'unpaid');
+  document.querySelectorAll('[data-pay-status]').forEach(c => c.classList.toggle('active', c.dataset.payStatus === curStatus));
+  updateBillPayUI(curStatus, bill);
+
+  openModal('billPayModal');
+}
+
+function updateBillPayUI(status, bill) {
+  const amtField = document.getElementById('billPayAmountField');
+  const hint = document.getElementById('billPayHint');
+  if (status === 'paid') {
+    amtField.style.display = 'none';
+    hint.textContent = '';
+  } else if (status === 'partial') {
+    amtField.style.display = 'block';
+    hint.textContent = `Default amount: ${fmt(bill.amount)}. Enter what you actually paid.`;
+  } else {
+    amtField.style.display = 'none';
+    hint.textContent = '';
+  }
+}
+
+document.addEventListener('click', e => {
+  if (e.target.dataset && e.target.dataset.payStatus) {
+    document.querySelectorAll('[data-pay-status]').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    const billId = document.getElementById('billpay-id').value;
+    const bill = state.bills.find(b => b.id === billId);
+    if (bill) updateBillPayUI(e.target.dataset.payStatus, bill);
+  }
+});
+
+function saveBillPayment() {
+  const id = document.getElementById('billpay-id').value;
+  const pk = document.getElementById('billpay-month').value;
+  const status = document.querySelector('[data-pay-status].active')?.dataset.payStatus || 'unpaid';
+  const paidAmount = parseFloat(document.getElementById('billpay-amount').value) || 0;
+  const lateFee = parseFloat(document.getElementById('billpay-latefee').value) || 0;
+  const override = parseFloat(document.getElementById('billpay-override').value);
+
+  const bill = state.bills.find(b => b.id === id);
+  if (!bill) return;
+
+  if (status === 'partial' && !paidAmount) { toast('Enter partial payment amount'); return; }
+
+  bill.payments = bill.payments || {};
+  const existing = bill.payments[pk] || {};
+  bill.payments[pk] = {
+    status,
+    paidAmount: status === 'paid' ? bill.amount : status === 'partial' ? paidAmount : 0,
+    lateFee: lateFee || 0,
+    override: !isNaN(override) ? override : existing.override,
+    timestamp: Date.now(),
+  };
+
+  save();
+  closeModal('billPayModal');
+  renderAll();
+  if (status === 'paid') toast(`${bill.name} paid ✓`);
+  else if (status === 'partial') toast(`${fmt(paidAmount)} toward ${bill.name}`);
+  else toast('Status updated');
+}
+
+/* Legacy helper kept for backwards compat with older saved data */
 function toggleBillPaid(id) {
   const bill = state.bills.find(b => b.id === id);
   if (!bill) return;
-  const monthKey = today().toISOString().slice(0,7);
-  bill.paidMonths = bill.paidMonths || [];
-  const idx = bill.paidMonths.indexOf(monthKey);
-  if (idx >= 0) bill.paidMonths.splice(idx, 1);
-  else bill.paidMonths.push(monthKey);
-  save();
-  renderAll();
-  toast(idx >= 0 ? 'Marked unpaid' : 'Bill paid ✓');
+  // Open the new payment modal instead
+  openBillPayModal(bill);
 }
 
-function nextDueDate(dueDay) {
+function nextDueDate(bill) {
+  if (bill.billType === 'oneoff') {
+    return parseDate(bill.dueDate);
+  }
   const t = today();
-  let d = new Date(t.getFullYear(), t.getMonth(), dueDay);
-  if (d < t) d = new Date(t.getFullYear(), t.getMonth() + 1, dueDay);
+  let d = new Date(t.getFullYear(), t.getMonth(), bill.dueDay);
+  // If unpaid this month and past due, the "next due" is still this month (it's overdue)
+  const status = billStatus(bill);
+  if (status.status !== 'paid' && d < t) return d; // past due — show this month's date
+  if (d < t) d = new Date(t.getFullYear(), t.getMonth() + 1, bill.dueDay);
   return d;
 }
 
@@ -1992,14 +2252,19 @@ function renderHome() {
   const next = nextPaycheckDate();
   const daysToNext = next ? daysBetween(todayD, next) : 0;
 
-  // Bills due before next paycheck (unpaid)
-  const monthKey = todayD.toISOString().slice(0,7);
+  // Bills due before next paycheck (unpaid OR past due)
   const upcomingBills = state.bills.filter(b => {
-    const due = nextDueDate(b.dueDay);
-    const isPaid = (b.paidMonths || []).includes(due.toISOString().slice(0,7));
-    return !isPaid && (!next || due <= next);
+    const status = billStatus(b);
+    if (status.status === 'paid') return false;
+    const due = nextDueDate(b);
+    // Past due always shows; otherwise must be due before next paycheck
+    return billIsPastDue(b) || !next || due <= next;
   });
-  const billsTotal = upcomingBills.reduce((s, b) => s + b.amount, 0);
+  const billsTotal = upcomingBills.reduce((s, b) => s + billStatus(b).remaining, 0);
+
+  // Past-due bills (subset)
+  const pastDueBills = state.bills.filter(b => billIsPastDue(b));
+  const pastDueTotal = pastDueBills.reduce((s, b) => s + billStatus(b).remaining, 0);
 
   // This week's spending
   const weekStart = startOfWeek(todayD);
@@ -2012,21 +2277,30 @@ function renderHome() {
   const monthSpent = state.transactions.filter(t => t.type === 'expense' && parseDate(t.date) >= monthStart)
     .reduce((s, t) => s + t.amount, 0);
 
-  // SAFE TO SPEND: weekly fun money minus this week's spending, minus any urgent bills hitting in next 7 days
+  // SAFE TO SPEND: weekly fun money minus this week's spending, minus past-due bills, minus bills hitting in next 7 days
   const billsIn7 = state.bills.filter(b => {
-    const due = nextDueDate(b.dueDay);
-    const isPaid = (b.paidMonths || []).includes(due.toISOString().slice(0,7));
-    return !isPaid && daysBetween(todayD, due) <= 7;
-  }).reduce((s, b) => s + b.amount, 0);
+    const status = billStatus(b);
+    if (status.status === 'paid') return false;
+    if (billIsPastDue(b)) return true; // past due always counts against safe-to-spend
+    const due = nextDueDate(b);
+    return daysBetween(todayD, due) <= 7 && daysBetween(todayD, due) >= 0;
+  }).reduce((s, b) => s + billStatus(b).remaining, 0);
+
   const safeRaw = weekRemaining - billsIn7;
   const safe = Math.max(0, safeRaw);
 
-  document.getElementById('safeToSpend').textContent = fmt(safe).split('.')[0] + (fmt(safe).includes('.') ? `<span class="cents">.${fmt(safe).split('.')[1]}</span>` : '');
   document.getElementById('safeToSpend').innerHTML = `${fmt(safe).split('.')[0]}<span class="cents">.${fmt(safe).split('.')[1] || '00'}</span>`;
   document.getElementById('safeToSpend').classList.toggle('danger', safeRaw < 0 || safe < 20);
-  document.getElementById('safeToSpendSub').textContent = safeRaw < 0
-    ? 'over by ' + fmt(Math.abs(safeRaw)) + ' — careful'
-    : `bills coming: ${fmt(billsIn7)} · week left: ${fmt(weekRemaining)}`;
+
+  let safeSub;
+  if (pastDueTotal > 0) {
+    safeSub = `⚠ ${fmt(pastDueTotal)} PAST DUE · pay before more fees`;
+  } else if (safeRaw < 0) {
+    safeSub = 'over by ' + fmt(Math.abs(safeRaw)) + ' — careful';
+  } else {
+    safeSub = `bills coming: ${fmt(billsIn7)} · week left: ${fmt(weekRemaining)}`;
+  }
+  document.getElementById('safeToSpendSub').textContent = safeSub;
 
   document.getElementById('weekRemaining').textContent = fmt(weekRemaining);
   document.getElementById('nextPayCountdown').textContent = next ? `${daysToNext}d` : '—';
@@ -2037,24 +2311,51 @@ function renderHome() {
   document.getElementById('billsDueSoon').textContent = fmt(billsTotal);
   document.getElementById('billsBar').style.width = Math.min(100, (billsTotal / (state.income.paycheck || 1)) * 100) + '%';
 
-  document.getElementById('billsCount').textContent = `${upcomingBills.length} ahead`;
+  document.getElementById('billsCount').textContent = `${upcomingBills.length} ahead${pastDueBills.length ? ` · ${pastDueBills.length} past due` : ''}`;
 
-  // Upcoming bills list
+  // Upcoming bills list — past-due first, then by due date
   const ubEl = document.getElementById('upcomingBills');
-  if (!upcomingBills.length) {
+  const sortedUpcoming = [...upcomingBills].sort((a, b) => {
+    const aPast = billIsPastDue(a);
+    const bPast = billIsPastDue(b);
+    if (aPast && !bPast) return -1;
+    if (!aPast && bPast) return 1;
+    return nextDueDate(a) - nextDueDate(b);
+  });
+
+  if (!sortedUpcoming.length) {
     ubEl.innerHTML = '<div class="empty"><div class="msg">all clear ahead</div></div>';
   } else {
-    ubEl.innerHTML = upcomingBills.slice(0, 5).map(b => {
-      const due = nextDueDate(b.dueDay);
+    ubEl.innerHTML = sortedUpcoming.slice(0, 6).map(b => {
+      const due = nextDueDate(b);
       const days = daysBetween(todayD, due);
-      const cls = days <= 3 ? 'urgent' : days <= 7 ? 'warning' : 'safe';
-      return `<div class="list-item ${cls}" onclick="toggleBillPaid('${b.id}')">
-        <div class="icon">⌖</div>
+      const isPastDue = billIsPastDue(b);
+      const status = billStatus(b);
+      let cls, subText;
+      if (isPastDue) {
+        cls = 'urgent';
+        const overdueDays = Math.abs(days);
+        subText = `PAST DUE · ${overdueDays}d overdue · ${due.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}`;
+      } else if (days <= 3) {
+        cls = 'urgent';
+        subText = `due in ${days}d · ${due.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}`;
+      } else if (days <= 7) {
+        cls = 'warning';
+        subText = `due in ${days}d · ${due.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}`;
+      } else {
+        cls = 'safe';
+        subText = `due in ${days}d · ${due.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}`;
+      }
+      if (status.status === 'partial') {
+        subText += ` · ${fmt(status.paid)} paid`;
+      }
+      return `<div class="list-item ${cls}" onclick="openBillPayModal(state.bills.find(x => x.id === '${b.id}'))">
+        <div class="icon">${isPastDue ? '⚠' : '⌖'}</div>
         <div class="body">
-          <div class="title">${escapeHtml(b.name)}</div>
-          <div class="sub">due in ${days}d · ${due.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+          <div class="title">${escapeHtml(b.name)}${b.billType === 'oneoff' ? ' <small style=\"color: var(--ink-faint); font-weight: normal;\">(one-time)</small>' : ''}</div>
+          <div class="sub">${subText}</div>
         </div>
-        <div class="amount blood">${fmt(b.amount)}</div>
+        <div class="amount blood">${fmt(status.remaining)}</div>
       </div>`;
     }).join('');
   }
@@ -2180,17 +2481,30 @@ function renderPaycheck() {
 /* -------------------- Bills -------------------- */
 function renderBills() {
   const monthKey = today().toISOString().slice(0,7);
-  const totalMonthly = state.bills.reduce((s, b) => s + b.amount, 0);
-  const paid = state.bills.filter(b => (b.paidMonths || []).includes(monthKey)).reduce((s, b) => s + b.amount, 0);
+
+  // Total monthly = sum of recurring bills' effective amounts for this month + any one-offs not yet paid
+  const recurring = state.bills.filter(b => b.billType === 'recurring' || !b.billType);
+  const oneoffs = state.bills.filter(b => b.billType === 'oneoff');
+  const totalMonthly = recurring.reduce((s, b) => s + billEffectiveAmount(b, monthKey), 0);
+  const paid = recurring.reduce((s, b) => {
+    const status = billStatus(b, monthKey);
+    return s + status.paid;
+  }, 0);
+  const oneoffOutstanding = oneoffs.reduce((s, b) => s + billStatus(b).remaining, 0);
 
   document.getElementById('totalMonthlyBills').textContent = fmt(totalMonthly);
   document.getElementById('paidThisMonth').textContent = fmt(paid);
 
-  // List sorted by upcoming due date
+  // List sorted: past-due first, then by upcoming due date
   const sorted = [...state.bills].sort((a, b) => {
-    const da = nextDueDate(a.dueDay);
-    const db = nextDueDate(b.dueDay);
-    return da - db;
+    const aPast = billIsPastDue(a);
+    const bPast = billIsPastDue(b);
+    if (aPast && !bPast) return -1;
+    if (!aPast && bPast) return 1;
+    const aPaid = billStatus(a).status === 'paid' ? 1 : 0;
+    const bPaid = billStatus(b).status === 'paid' ? 1 : 0;
+    if (aPaid !== bPaid) return aPaid - bPaid; // unpaid before paid
+    return nextDueDate(a) - nextDueDate(b);
   });
 
   const el = document.getElementById('billsList');
@@ -2198,17 +2512,49 @@ function renderBills() {
     el.innerHTML = '<div class="empty"><div class="msg">no bills tracked yet</div><div class="card-label">tap + above to add</div></div>';
   } else {
     el.innerHTML = sorted.map(b => {
-      const due = nextDueDate(b.dueDay);
+      const due = nextDueDate(b);
       const days = daysBetween(today(), due);
-      const isPaid = (b.paidMonths || []).includes(monthKey);
-      const cls = isPaid ? 'paid' : days <= 3 ? 'urgent' : days <= 7 ? 'warning' : 'safe';
+      const status = billStatus(b);
+      const isPastDue = billIsPastDue(b);
+      const eff = billEffectiveAmount(b);
+
+      let cls, statusText, iconChar;
+      if (status.status === 'paid') {
+        cls = 'paid';
+        statusText = 'paid';
+        iconChar = '✓';
+      } else if (status.status === 'partial') {
+        cls = isPastDue ? 'urgent' : 'warning';
+        statusText = `${fmt(status.paid)} paid · ${fmt(status.remaining)} left`;
+        iconChar = '◐';
+      } else if (isPastDue) {
+        cls = 'urgent';
+        statusText = `PAST DUE · ${Math.abs(days)}d overdue`;
+        iconChar = '⚠';
+      } else if (days <= 3) {
+        cls = 'urgent';
+        statusText = `due in ${days}d`;
+        iconChar = '⌖';
+      } else if (days <= 7) {
+        cls = 'warning';
+        statusText = `due in ${days}d`;
+        iconChar = '⌖';
+      } else {
+        cls = 'safe';
+        statusText = `due in ${days}d`;
+        iconChar = '⌖';
+      }
+
+      const typeLabel = b.billType === 'oneoff' ? 'one-time' : `day ${b.dueDay}`;
+      const subInfo = `${b.category} · ${typeLabel} · ${statusText}`;
+
       return `<div class="list-item ${cls}">
-        <div class="icon" onclick="toggleBillPaid('${b.id}'); event.stopPropagation();" style="cursor: pointer;">${isPaid ? '✓' : '⌖'}</div>
+        <div class="icon" onclick="event.stopPropagation(); openBillPayModal(state.bills.find(x => x.id === '${b.id}'))" style="cursor: pointer;">${iconChar}</div>
         <div class="body" onclick="openBillModal(state.bills.find(x => x.id === '${b.id}'))">
           <div class="title">${escapeHtml(b.name)}</div>
-          <div class="sub">${b.category} · day ${b.dueDay} · ${isPaid ? 'paid' : `${days}d`}</div>
+          <div class="sub">${subInfo}</div>
         </div>
-        <div class="amount blood" onclick="openBillModal(state.bills.find(x => x.id === '${b.id}'))">${fmt(b.amount)}</div>
+        <div class="amount blood" onclick="openBillModal(state.bills.find(x => x.id === '${b.id}'))">${fmt(status.status === 'paid' ? eff : status.remaining)}</div>
       </div>`;
     }).join('');
   }
@@ -2227,7 +2573,10 @@ function renderCalendar() {
   let html = '';
   for (let i = 0; i < firstDay; i++) html += '<div></div>';
   for (let d = 1; d <= lastDate; d++) {
-    const billsToday = state.bills.filter(b => b.dueDay === d);
+    // Bills due on day d this month — recurring matching dueDay, plus any oneoffs landing on this date
+    const recurringHere = state.bills.filter(b => (b.billType === 'recurring' || !b.billType) && b.dueDay === d);
+    const oneoffHere = state.bills.filter(b => b.billType === 'oneoff' && b.dueDate && parseDate(b.dueDate).getDate() === d && parseDate(b.dueDate).getMonth() === month && parseDate(b.dueDate).getFullYear() === year);
+    const billsToday = [...recurringHere, ...oneoffHere];
     const isToday = d === t.getDate();
     const cls = (billsToday.length ? 'has-bill ' : '') + (isToday ? 'today' : '');
     html += `<div class="cal-day ${cls}">${d}${billsToday.length ? '<div class="dot"></div>' : ''}</div>`;
