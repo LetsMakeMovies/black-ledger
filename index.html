@@ -777,6 +777,217 @@
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg-deep); }
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  /* DREAD INDEX */
+  .dread {
+    position: relative;
+    margin: 0 auto 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .dread:hover { border-color: var(--border-strong); }
+  .dread-meter {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-void);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+  }
+  .dread-meter-fill {
+    height: 100%;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s;
+    border-radius: 3px;
+  }
+  .dread-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+  .dread-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    flex-shrink: 0;
+    min-width: 32px;
+    text-align: right;
+  }
+  .dread-detail {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-subtle);
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.5;
+    display: none;
+  }
+  .dread.expanded .dread-detail { display: block; }
+
+  /* BACKUP BANNER */
+  .banner {
+    background: linear-gradient(180deg, rgba(212, 163, 65, 0.1), var(--bg-card));
+    border: 1px solid var(--candle-dim);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .banner.warn {
+    background: linear-gradient(180deg, rgba(168, 50, 50, 0.1), var(--bg-card));
+    border-color: var(--blood-deep);
+  }
+  .banner-text { flex: 1; color: var(--ink-dim); }
+  .banner-text strong { color: var(--ink); }
+  .banner button { flex-shrink: 0; }
+
+  /* CHECK-IN STYLES */
+  .checkin-step {
+    margin-bottom: 16px;
+  }
+  .balance-display {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .balance-row .lbl { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.05em; }
+  .balance-row .val { font-family: 'JetBrains Mono', monospace; font-size: 16px; color: var(--ink); }
+  .balance-row.drift { border-top: 1px dashed var(--border-strong); margin-top: 6px; padding-top: 12px; }
+  .balance-row.drift .val { font-size: 22px; font-weight: 500; }
+  .balance-row.drift .val.bad { color: var(--blood-bright); }
+  .balance-row.drift .val.good { color: var(--moss-bright); }
+
+  .duplicate-suggestion {
+    background: var(--bg-elevated);
+    border: 1px solid var(--candle-dim);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .duplicate-suggestion .actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  /* PENDING TRANSACTION */
+  .list-item.pending {
+    opacity: 0.65;
+    border-left-color: var(--candle-dim);
+    border-left-width: 3px;
+  }
+  .list-item.pending .title::after {
+    content: ' · pending';
+    color: var(--candle);
+    font-size: 11px;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+  .toggle {
+    width: 44px; height: 24px;
+    background: var(--bg-void);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: var(--candle-dim); border-color: var(--candle); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    background: var(--ink);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* LOAN PLANNER */
+  .scenario-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .scenario-card:hover { border-color: var(--candle-dim); }
+  .scenario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .scenario-header .name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .scenario-header .verdict {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  .scenario-header .verdict.go { background: var(--moss); color: var(--bg-void); }
+  .scenario-header .verdict.caution { background: var(--candle); color: var(--bg-void); }
+  .scenario-header .verdict.nogo { background: var(--blood); color: var(--ink); }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 14px;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .scenario-grid .lbl { color: var(--ink-faint); }
+  .scenario-grid .val { color: var(--ink); font-family: 'JetBrains Mono', monospace; text-align: right; }
+  .scenario-grid .val.good { color: var(--moss-bright); }
+  .scenario-grid .val.bad { color: var(--blood-bright); }
+
+  .scenario-summary {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-subtle);
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -845,6 +1056,7 @@
     <button class="tab" data-tab="paycheck">Paycheck</button>
     <button class="tab" data-tab="bills">Bills</button>
     <button class="tab" data-tab="debt">Debt</button>
+    <button class="tab" data-tab="loans">Loan Planner</button>
     <button class="tab" data-tab="goals">Goals</button>
     <button class="tab" data-tab="insights">Insights</button>
     <button class="tab" data-tab="settings">Settings</button>
@@ -852,6 +1064,15 @@
 
   <!-- TODAY -->
   <div class="panel active" id="panel-home">
+    <div id="backupBanner"></div>
+
+    <div class="dread" id="dreadIndex" onclick="toggleDreadDetail()">
+      <span class="dread-label">Dread Index</span>
+      <div class="dread-meter"><div class="dread-meter-fill" id="dreadFill" style="width: 50%; background: var(--candle);"></div></div>
+      <span class="dread-value" id="dreadValue">—</span>
+      <div class="dread-detail" id="dreadDetail"></div>
+    </div>
+
     <div class="hero-card">
       <div class="hero-label">Safe to Spend Today</div>
       <div class="hero-number" id="safeToSpend">$0</div>
@@ -862,6 +1083,11 @@
         <div>Next Pay<strong id="nextPayCountdown">—</strong></div>
         <div>This Month<strong id="monthSpent">$0</strong></div>
       </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+      <button class="btn full" onclick="startCheckIn()">⌬ Check In</button>
+      <button class="btn full" onclick="reviewPending()">◐ Pending (<span id="pendingCount">0</span>)</button>
     </div>
 
     <div class="stat-grid">
@@ -972,6 +1198,67 @@
       </div>
       <div class="chart-wrap" style="margin-top: 10px;"><canvas id="creditChart"></canvas></div>
     </div>
+  </div>
+
+  <!-- LOAN PLANNER -->
+  <div class="panel" id="panel-loans">
+    <div class="card glow">
+      <div class="card-label">401k loan strategist</div>
+      <div class="card-title">The Real Math</div>
+      <p style="color: var(--ink-dim); font-size: 13px; line-height: 1.6; margin-top: 8px;">
+        Run scenarios for taking a 401k loan to consolidate higher-interest debt. The math accounts for lost growth on the borrowed amount, payroll deductions, and your existing debt strategy.
+      </p>
+      <div class="insight warn" style="margin-top: 12px;">
+        <strong>Risk reminder.</strong> If you leave or lose your job before the loan is repaid, the balance becomes due in ~60-90 days or it's treated as an early withdrawal — federal tax + 10% penalty apply.
+      </div>
+    </div>
+
+    <div class="section-header"><h3>Quick Estimator</h3><span class="meta">try numbers</span></div>
+    <div class="card">
+      <div class="field">
+        <label>Loan amount</label>
+        <input id="loan-amount" type="number" step="0.01" placeholder="e.g. 2000" oninput="renderLoanPreview()" />
+      </div>
+      <div class="field">
+        <label>Term (months)</label>
+        <select id="loan-term" onchange="renderLoanPreview()">
+          <option value="12">12 months</option>
+          <option value="24" selected>24 months</option>
+          <option value="36">36 months</option>
+          <option value="48">48 months</option>
+          <option value="60">60 months</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Interest rate (%)</label>
+        <input id="loan-rate" type="number" step="0.01" value="7.75" oninput="renderLoanPreview()" />
+      </div>
+      <div class="field">
+        <label>Repayment frequency</label>
+        <select id="loan-freq" onchange="renderLoanPreview()">
+          <option value="biweekly" selected>Bi-weekly (paycheck deduction)</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+
+      <div id="loanPreview" style="margin-top: 14px;"></div>
+
+      <div class="field" style="margin-top: 14px;">
+        <label>Scenario name <small style="color: var(--ink-faint); text-transform: none; letter-spacing: 0; font-weight: normal;">(optional, to save it)</small></label>
+        <input id="loan-name" type="text" placeholder="e.g. Wipe All Debt" />
+      </div>
+
+      <button class="btn primary full" onclick="saveLoanScenario()">Save This Scenario</button>
+    </div>
+
+    <div class="section-header"><h3>Saved Scenarios</h3></div>
+    <div id="scenariosList"></div>
+
+    <div class="section-header"><h3>Pay-for-Delete Letters</h3><span class="meta">collection negotiation</span></div>
+    <p style="color: var(--ink-dim); font-size: 13px; line-height: 1.6; padding: 0 4px 12px;">
+      Generate negotiation letters for any collection accounts. Customize the offer percentage. Always require written agreement BEFORE paying.
+    </p>
+    <div id="payDeleteList"></div>
   </div>
 
   <!-- GOALS -->
@@ -1105,6 +1392,13 @@
     <div class="field">
       <label>Date</label>
       <input id="tx-date" type="date" />
+    </div>
+    <div class="toggle-row">
+      <div>
+        <div style="font-size: 13px; color: var(--ink);">Pending</div>
+        <div style="font-size: 11px; color: var(--ink-faint);">Bank hasn't posted it yet</div>
+      </div>
+      <div class="toggle" id="txPendingToggle" onclick="this.classList.toggle('on')"></div>
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('txModal')">Cancel</button>
@@ -1395,6 +1689,119 @@
   </div>
 </div>
 
+<!-- CHECK-IN MODAL -->
+<div class="modal-bg" id="checkinModal">
+  <div class="modal">
+    <div class="modal-title">The Reckoning</div>
+    <div class="modal-sub" id="checkinSubtitle">a brief audit</div>
+
+    <div id="checkinStep1" class="checkin-step">
+      <div class="field">
+        <label>Your actual checking balance right now</label>
+        <input id="checkin-balance" type="number" step="0.01" placeholder="from your bank app" />
+        <small style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;">
+          Open your banking app, copy the available balance, paste it here.
+        </small>
+      </div>
+      <div class="field">
+        <label>Date of this check-in</label>
+        <input id="checkin-date" type="date" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('checkinModal')">Cancel</button>
+        <button class="btn primary" onclick="checkInStep2()">Compute Drift</button>
+      </div>
+    </div>
+
+    <div id="checkinStep2" class="checkin-step" style="display: none;">
+      <div class="balance-display" id="checkinDriftDisplay"></div>
+      <div id="checkinSuggestions"></div>
+      <div class="modal-actions" style="margin-top: 14px;">
+        <button class="btn" onclick="closeModal('checkinModal')">Skip</button>
+        <button class="btn" onclick="addMissingTx()">+ Add Missing Tx</button>
+        <button class="btn primary" onclick="finalizeCheckIn()">Finalize</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK ADD MISSING TX MODAL -->
+<div class="modal-bg" id="missingTxModal">
+  <div class="modal">
+    <div class="modal-title">Add Missing Transaction</div>
+    <div class="modal-sub">caught during check-in</div>
+    <div class="field">
+      <label>Amount</label>
+      <input id="missing-amount" type="number" step="0.01" />
+    </div>
+    <div class="field">
+      <label>What was it?</label>
+      <input id="missing-note" type="text" placeholder="e.g. gas, takeout, groceries" />
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <select id="missing-category">
+        <option value="bar">Bar / Drinks</option>
+        <option value="takeout-so">Takeout · S/O</option>
+        <option value="takeout-cw">Takeout · CW</option>
+        <option value="takeout-solo">Takeout · Solo</option>
+        <option value="cigs">Smokes</option>
+        <option value="groceries">Groceries</option>
+        <option value="gas">Gas</option>
+        <option value="entertainment">Entertainment</option>
+        <option value="misc">Misc</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input id="missing-date" type="date" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('missingTxModal')">Cancel</button>
+      <button class="btn primary" onclick="saveMissingTx()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAY-FOR-DELETE LETTER MODAL -->
+<div class="modal-bg" id="payDeleteModal">
+  <div class="modal" style="max-width: 540px;">
+    <div class="modal-title">Pay-for-Delete Letter</div>
+    <div class="modal-sub" id="payDeleteCollector">—</div>
+
+    <div class="field">
+      <label>Offer percentage</label>
+      <input id="pd-percent" type="number" step="1" min="20" max="100" value="40" oninput="renderPayDeleteLetter()" />
+      <small style="color: var(--ink-faint); font-size: 11px; margin-top: 4px; display: block;">
+        Start low (30-40%). Debt buyers like Midland often settle. Avoid going above 60%.
+      </small>
+    </div>
+
+    <div class="field">
+      <label>Your name</label>
+      <input id="pd-name" type="text" placeholder="Your full name" oninput="renderPayDeleteLetter()" />
+    </div>
+
+    <div class="field">
+      <label>Your address</label>
+      <input id="pd-address" type="text" placeholder="Street, City, State Zip" oninput="renderPayDeleteLetter()" />
+    </div>
+
+    <div class="field">
+      <label>Account or reference number <small style="color: var(--ink-faint); text-transform: none; letter-spacing: 0; font-weight: normal;">(if known)</small></label>
+      <input id="pd-account" type="text" placeholder="from collector's letter" oninput="renderPayDeleteLetter()" />
+    </div>
+
+    <div class="card" style="background: var(--bg-void); padding: 14px; max-height: 280px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; white-space: pre-wrap; line-height: 1.6;" id="pdLetterPreview">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('payDeleteModal')">Close</button>
+      <button class="btn primary" onclick="copyPayDeleteLetter()">Copy Letter</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1422,7 +1829,10 @@ let state = {
   debtPayments: [],
   creditScores: [],
   snapshots: [],
-  txDraft: { type: 'expense', category: 'bar' },
+  checkIns: [],
+  loanScenarios: [],
+  lastExportDate: null,
+  txDraft: { type: 'expense', category: 'bar', pending: false },
 };
 
 let charts = {};
@@ -1653,10 +2063,11 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 
 /* -------------------- Transactions -------------------- */
 function openTransactionModal() {
-  state.txDraft = { type: 'expense', category: 'bar' };
+  state.txDraft = { type: 'expense', category: 'bar', pending: false };
   document.getElementById('tx-amount').value = '';
   document.getElementById('tx-note').value = '';
   document.getElementById('tx-date').value = dateStr(today());
+  document.getElementById('txPendingToggle').classList.remove('on');
   // Reset chips
   document.querySelectorAll('[data-tx-type]').forEach(c => c.classList.toggle('active', c.dataset.txType === 'expense'));
   document.querySelectorAll('[data-cat]').forEach(c => c.classList.toggle('active', c.dataset.cat === 'bar'));
@@ -1684,6 +2095,7 @@ function saveTransaction() {
   const amount = parseFloat(document.getElementById('tx-amount').value);
   const note = document.getElementById('tx-note').value.trim();
   const date = document.getElementById('tx-date').value;
+  const pending = document.getElementById('txPendingToggle').classList.contains('on');
   if (!amount || amount <= 0) { toast('Amount required'); return; }
 
   state.transactions.push({
@@ -1693,12 +2105,13 @@ function saveTransaction() {
     amount: amount,
     note: note,
     date: date,
+    pending: pending,
     timestamp: Date.now(),
   });
   save();
   closeModal('txModal');
   renderAll();
-  toast(state.txDraft.type === 'income' ? 'Income logged' : `${fmt(amount)} logged`);
+  toast(state.txDraft.type === 'income' ? 'Income logged' : pending ? `${fmt(amount)} logged (pending)` : `${fmt(amount)} logged`);
 }
 
 /* -------------------- Bills -------------------- */
@@ -2180,6 +2593,8 @@ function saveSettings() {
 
 /* -------------------- Export / Import / Snapshots -------------------- */
 function exportData() {
+  state.lastExportDate = dateStr(today());
+  save();
   const data = JSON.stringify(state, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -2188,7 +2603,8 @@ function exportData() {
   a.download = `black-ledger-${dateStr(today())}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  toast('Exported');
+  renderAll();
+  toast('Exported · saved to Files');
 }
 
 function importData(event) {
@@ -2198,12 +2614,34 @@ function importData(event) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      if (!confirm('This will replace all current data. Continue?')) return;
-      state = { ...state, ...data };
+      const choice = confirm('Click OK to REPLACE all current data with the import.\nClick Cancel to MERGE (keep existing data, add anything new from import).');
+      if (choice) {
+        // Replace
+        state = { ...state, ...data };
+        toast('Data replaced from import');
+      } else {
+        // Merge by ID
+        const mergeArrays = (a, b, key = 'id') => {
+          const map = {};
+          (a || []).forEach(item => map[item[key]] = item);
+          (b || []).forEach(item => { if (!map[item[key]]) map[item[key]] = item; });
+          return Object.values(map);
+        };
+        state.bills = mergeArrays(state.bills, data.bills);
+        state.debts = mergeArrays(state.debts, data.debts);
+        state.goals = mergeArrays(state.goals, data.goals);
+        state.transactions = mergeArrays(state.transactions, data.transactions);
+        state.paychecksReceived = mergeArrays(state.paychecksReceived, data.paychecksReceived);
+        state.debtPayments = mergeArrays(state.debtPayments, data.debtPayments);
+        state.creditScores = mergeArrays(state.creditScores, data.creditScores);
+        state.snapshots = mergeArrays(state.snapshots, data.snapshots);
+        state.checkIns = mergeArrays(state.checkIns, data.checkIns);
+        state.loanScenarios = mergeArrays(state.loanScenarios, data.loanScenarios);
+        toast('Data merged');
+      }
       save();
       renderAll();
-      toast('Data imported');
-    } catch (err) { toast('Invalid file'); }
+    } catch (err) { toast('Invalid file'); console.error(err); }
   };
   reader.readAsText(file);
   event.target.value = '';
@@ -2237,13 +2675,20 @@ function resetEverything() {
 
 function renderAll() {
   if (!state.initialized) { checkOnboard(); return; }
+  renderBackupBanner();
+  renderDreadIndex();
   renderHome();
   renderPaycheck();
   renderBills();
   renderDebt();
+  renderLoanPlanner();
   renderGoals();
   renderInsights();
   renderSettings();
+  // Pending count
+  const pendingCount = state.transactions.filter(t => t.pending).length;
+  const pcEl = document.getElementById('pendingCount');
+  if (pcEl) pcEl.textContent = pendingCount;
 }
 
 /* -------------------- Home -------------------- */
@@ -2373,7 +2818,7 @@ function renderHome() {
   } else {
     raEl.innerHTML = recent.map(t => {
       const cat = categoryDisplay(t.category);
-      return `<div class="list-item">
+      return `<div class="list-item ${t.pending ? 'pending' : ''}">
         <div class="icon">${cat.icon}</div>
         <div class="body">
           <div class="title">${escapeHtml(t.note || cat.label)}</div>
@@ -2962,7 +3407,609 @@ function formatRelDate(s) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-/* -------------------- Init -------------------- */
+/* ========================================================================
+   CHECK-IN / RECONCILIATION
+   ======================================================================== */
+function startCheckIn() {
+  document.getElementById('checkinStep1').style.display = 'block';
+  document.getElementById('checkinStep2').style.display = 'none';
+  document.getElementById('checkin-balance').value = '';
+  document.getElementById('checkin-date').value = dateStr(today());
+  document.getElementById('checkinSubtitle').textContent = 'a brief audit';
+  openModal('checkinModal');
+}
+
+function lastCheckIn() {
+  return state.checkIns.length ? state.checkIns[state.checkIns.length - 1] : null;
+}
+
+function computeBookBalance(asOfDate) {
+  // Book balance = last reconciled balance
+  //   + all income/positive paychecks since then
+  //   - all non-pending expenses since then
+  const last = lastCheckIn();
+  const startTs = last ? last.timestamp : 0;
+  const startBalance = last ? last.actualBalance : 0;
+
+  let bal = startBalance;
+  state.transactions.forEach(t => {
+    if (t.timestamp <= startTs) return;
+    if (t.pending) return;
+    if (t.type === 'income') bal += t.amount;
+    else bal -= t.amount;
+  });
+  state.paychecksReceived.forEach(p => {
+    if (p.timestamp <= startTs) return;
+    bal += p.amount;
+  });
+  state.debtPayments.forEach(p => {
+    if (p.timestamp <= startTs) return;
+    bal -= p.amount;
+  });
+  // Bills marked paid count too
+  state.bills.forEach(b => {
+    Object.values(b.payments || {}).forEach(p => {
+      if (!p.timestamp || p.timestamp <= startTs) return;
+      if (p.status === 'paid') bal -= (p.paidAmount || b.amount) + (p.lateFee || 0);
+      else if (p.status === 'partial') bal -= (p.paidAmount || 0);
+    });
+  });
+  return bal;
+}
+
+function findPossibleDuplicates() {
+  // Look for txs with same amount within 3 days of each other in last 14 days
+  const sevenAgo = new Date(today()); sevenAgo.setDate(sevenAgo.getDate() - 14);
+  const recent = state.transactions.filter(t => parseDate(t.date) >= sevenAgo && t.type === 'expense');
+  const dups = [];
+  for (let i = 0; i < recent.length; i++) {
+    for (let j = i + 1; j < recent.length; j++) {
+      if (Math.abs(recent[i].amount - recent[j].amount) < 0.01) {
+        const daysDiff = Math.abs(daysBetween(parseDate(recent[i].date), parseDate(recent[j].date)));
+        if (daysDiff <= 3) {
+          dups.push([recent[i], recent[j]]);
+        }
+      }
+    }
+  }
+  return dups;
+}
+
+function checkInStep2() {
+  const actual = parseFloat(document.getElementById('checkin-balance').value);
+  const date = document.getElementById('checkin-date').value;
+  if (isNaN(actual)) { toast('Enter a balance'); return; }
+
+  const book = computeBookBalance(date);
+  const drift = actual - book;
+
+  // Stash for finalize
+  state.txDraft.checkin = { actual, date, book, drift };
+
+  // Render drift display
+  const driftEl = document.getElementById('checkinDriftDisplay');
+  let driftHtml = `
+    <div class="balance-row"><span class="lbl">Your bank shows</span><span class="val">${fmt(actual)}</span></div>
+    <div class="balance-row"><span class="lbl">App expected</span><span class="val">${fmt(book)}</span></div>
+    <div class="balance-row drift">
+      <span class="lbl">Drift</span>
+      <span class="val ${Math.abs(drift) < 1 ? 'good' : 'bad'}">${drift >= 0 ? '+' : ''}${fmt(drift)}</span>
+    </div>
+  `;
+  driftEl.innerHTML = driftHtml;
+
+  // Suggestions
+  const sugEl = document.getElementById('checkinSuggestions');
+  let sugHtml = '';
+
+  if (Math.abs(drift) < 1) {
+    sugHtml = '<div class="insight good"><strong>Reconciled.</strong> Your numbers match the bank within a dollar. Solid discipline.</div>';
+  } else if (drift < -1) {
+    // App thinks you have more than you do — likely missing expenses
+    sugHtml = `<div class="insight warn"><strong>Bank shows ${fmt(Math.abs(drift))} less than expected.</strong> You probably forgot to log an expense. Tap "+ Add Missing Tx" to log it now.</div>`;
+
+    // Look for possible duplicates in case it's the opposite
+    const dups = findPossibleDuplicates();
+    if (dups.length) {
+      sugHtml += '<div class="card-label" style="margin: 12px 0 6px;">possible duplicates</div>';
+      dups.slice(0, 3).forEach(([a, b]) => {
+        sugHtml += `<div class="duplicate-suggestion">
+          <div>Two ${fmt(a.amount)} expenses logged ${Math.abs(daysBetween(parseDate(a.date), parseDate(b.date)))} day(s) apart:</div>
+          <div style="margin-top: 4px; color: var(--ink-faint); font-size: 12px;">"${escapeHtml(a.note || categoryDisplay(a.category).label)}" on ${a.date} · "${escapeHtml(b.note || categoryDisplay(b.category).label)}" on ${b.date}</div>
+          <div class="actions">
+            <button class="btn small" onclick="deleteTx('${a.id}')">Remove first</button>
+            <button class="btn small" onclick="deleteTx('${b.id}')">Remove second</button>
+          </div>
+        </div>`;
+      });
+    }
+  } else if (drift > 1) {
+    // Bank shows more than expected — possible duplicate logged or unclaimed income
+    sugHtml = `<div class="insight"><strong>Bank shows ${fmt(drift)} more than expected.</strong> Either you logged something twice, an expense got reversed, or income wasn't tracked.</div>`;
+    const dups = findPossibleDuplicates();
+    if (dups.length) {
+      sugHtml += '<div class="card-label" style="margin: 12px 0 6px;">possible duplicates to remove</div>';
+      dups.slice(0, 3).forEach(([a, b]) => {
+        sugHtml += `<div class="duplicate-suggestion">
+          <div>Two ${fmt(a.amount)} expenses logged ${Math.abs(daysBetween(parseDate(a.date), parseDate(b.date)))} day(s) apart:</div>
+          <div style="margin-top: 4px; color: var(--ink-faint); font-size: 12px;">"${escapeHtml(a.note || categoryDisplay(a.category).label)}" on ${a.date} · "${escapeHtml(b.note || categoryDisplay(b.category).label)}" on ${b.date}</div>
+          <div class="actions">
+            <button class="btn small" onclick="deleteTx('${a.id}')">Remove first</button>
+            <button class="btn small" onclick="deleteTx('${b.id}')">Remove second</button>
+          </div>
+        </div>`;
+      });
+    }
+  }
+
+  sugEl.innerHTML = sugHtml;
+  document.getElementById('checkinStep1').style.display = 'none';
+  document.getElementById('checkinStep2').style.display = 'block';
+  document.getElementById('checkinSubtitle').textContent = 'review and reconcile';
+}
+
+function deleteTx(id) {
+  if (!confirm('Remove this transaction?')) return;
+  state.transactions = state.transactions.filter(t => t.id !== id);
+  save();
+  // Recompute and re-render
+  checkInStep2.call(null);
+  // Refresh check-in step 2
+  const c = state.txDraft.checkin;
+  if (c) {
+    document.getElementById('checkin-balance').value = c.actual;
+    document.getElementById('checkin-date').value = c.date;
+    checkInStep2();
+  }
+  toast('Removed');
+}
+
+function addMissingTx() {
+  document.getElementById('missing-amount').value = '';
+  document.getElementById('missing-note').value = '';
+  document.getElementById('missing-date').value = dateStr(today());
+  document.getElementById('missing-category').value = 'misc';
+  openModal('missingTxModal');
+}
+
+function saveMissingTx() {
+  const amount = parseFloat(document.getElementById('missing-amount').value);
+  const note = document.getElementById('missing-note').value.trim();
+  const cat = document.getElementById('missing-category').value;
+  const date = document.getElementById('missing-date').value;
+  if (!amount) { toast('Enter amount'); return; }
+  state.transactions.push({
+    id: uid(), type: 'expense', category: cat, amount, note, date,
+    pending: false, timestamp: Date.now(),
+  });
+  save();
+  closeModal('missingTxModal');
+  // Refresh check-in step 2 if open
+  if (state.txDraft.checkin) {
+    document.getElementById('checkin-balance').value = state.txDraft.checkin.actual;
+    document.getElementById('checkin-date').value = state.txDraft.checkin.date;
+    checkInStep2();
+  }
+  toast(`+${fmt(amount)} logged`);
+}
+
+function finalizeCheckIn() {
+  const c = state.txDraft.checkin;
+  if (!c) { closeModal('checkinModal'); return; }
+  // Recompute drift after any fixes
+  const book = computeBookBalance(c.date);
+  const drift = c.actual - book;
+
+  state.checkIns.push({
+    id: uid(),
+    date: c.date,
+    actualBalance: c.actual,
+    bookBalance: book,
+    drift: drift,
+    timestamp: Date.now(),
+  });
+  save();
+  closeModal('checkinModal');
+  state.txDraft.checkin = null;
+  renderAll();
+  toast(`Reckoned. Drift: ${drift >= 0 ? '+' : ''}${fmt(drift)}`);
+}
+
+/* ========================================================================
+   PENDING TRANSACTIONS
+   ======================================================================== */
+function reviewPending() {
+  const pending = state.transactions.filter(t => t.pending);
+  if (!pending.length) { toast('No pending transactions'); return; }
+  // Quick UX: ask if you want to clear them all (mark as posted)
+  const total = pending.reduce((s, t) => s + t.amount, 0);
+  if (confirm(`Mark all ${pending.length} pending transactions (${fmt(total)}) as posted/cleared?`)) {
+    pending.forEach(t => t.pending = false);
+    save();
+    renderAll();
+    toast('Pending cleared');
+  }
+}
+
+/* ========================================================================
+   LOAN PLANNER
+   ======================================================================== */
+function calcLoan(amount, rate, months, freq) {
+  const r = rate / 100 / 12;
+  const monthlyPayment = amount * (r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1);
+  const totalPaid = monthlyPayment * months;
+  const totalInterest = totalPaid - amount;
+
+  let perPeriodPayment = monthlyPayment;
+  let periodCount = months;
+  if (freq === 'biweekly') {
+    perPeriodPayment = monthlyPayment / 2.167;
+    periodCount = Math.round(months * 2.167);
+  }
+
+  // Lost growth on borrowed amount: assume 7% market return missed during repayment
+  // This is a rough estimate
+  const avgYearsBorrowed = months / 12 / 2; // average time the principal is "out"
+  const lostGrowth = amount * (Math.pow(1.07, avgYearsBorrowed) - 1);
+
+  return {
+    amount, rate, months, freq,
+    monthlyPayment,
+    perPeriodPayment,
+    periodCount,
+    totalPaid,
+    totalInterest,
+    lostGrowth,
+  };
+}
+
+function renderLoanPreview() {
+  const amount = parseFloat(document.getElementById('loan-amount').value);
+  const rate = parseFloat(document.getElementById('loan-rate').value);
+  const months = parseInt(document.getElementById('loan-term').value);
+  const freq = document.getElementById('loan-freq').value;
+
+  const el = document.getElementById('loanPreview');
+  if (!amount || !rate || !months) { el.innerHTML = ''; return; }
+
+  const calc = calcLoan(amount, rate, months, freq);
+
+  // Estimate debt savings if used to clear CCs (rough heuristic: 24% APR on existing CC debt)
+  const ccBalance = state.debts.filter(d => d.type === 'credit_card').reduce((s, d) => s + d.balance, 0);
+  const collectionsBalance = state.debts.filter(d => d.type === 'collection').reduce((s, d) => s + d.balance, 0);
+  const wipeAmount = Math.min(amount, ccBalance + collectionsBalance * 0.5); // assume 50% on collections
+
+  // Verdict
+  let verdict, verdictText, summary;
+  if (amount > 5000 || calc.perPeriodPayment > state.income.paycheck * 0.15) {
+    verdict = 'caution'; verdictText = 'CAUTION';
+    summary = `${fmt(calc.perPeriodPayment)} per ${freq === 'biweekly' ? 'paycheck' : 'month'} is a heavy bite. Make sure this loan replaces something costlier.`;
+  } else if (wipeAmount >= ccBalance && ccBalance > 500) {
+    verdict = 'go'; verdictText = 'GOOD MOVE';
+    summary = `Wiping ${fmt(ccBalance)} in credit cards (~24% APR) for ${calc.totalInterest.toFixed(0)} total interest at ${rate}%. Net savings likely ${fmt(Math.max(0, ccBalance * 0.24 * (months/12) - calc.totalInterest))}+.`;
+  } else {
+    verdict = 'go'; verdictText = 'REASONABLE';
+    summary = `Manageable payment. Plan what the proceeds clear before borrowing.`;
+  }
+
+  el.innerHTML = `
+    <div class="scenario-card" style="cursor: default; margin-bottom: 0;">
+      <div class="scenario-header">
+        <div class="name">${fmt(amount)} · ${months}mo</div>
+        <div class="verdict ${verdict}">${verdictText}</div>
+      </div>
+      <div class="scenario-grid">
+        <span class="lbl">Per ${freq === 'biweekly' ? 'paycheck' : 'month'}</span><span class="val bad">${fmt(calc.perPeriodPayment)}</span>
+        <span class="lbl">Total interest</span><span class="val">${fmt(calc.totalInterest)}</span>
+        <span class="lbl">Total paid back</span><span class="val">${fmt(calc.totalPaid)}</span>
+        <span class="lbl">Lost 401k growth (est.)</span><span class="val bad">~${fmt(calc.lostGrowth)}</span>
+        <span class="lbl">Adjusted paycheck</span><span class="val">${fmt(state.income.paycheck - calc.perPeriodPayment)}</span>
+        <span class="lbl">Debt-wipe potential</span><span class="val good">${fmt(wipeAmount)}</span>
+      </div>
+      <div class="scenario-summary">${summary}</div>
+    </div>
+  `;
+}
+
+function saveLoanScenario() {
+  const amount = parseFloat(document.getElementById('loan-amount').value);
+  const rate = parseFloat(document.getElementById('loan-rate').value);
+  const months = parseInt(document.getElementById('loan-term').value);
+  const freq = document.getElementById('loan-freq').value;
+  const name = document.getElementById('loan-name').value.trim() || `${fmt(amount)} · ${months}mo`;
+  if (!amount || !rate || !months) { toast('Fill loan details'); return; }
+  state.loanScenarios.push({
+    id: uid(), name, amount, rate, months, freq, timestamp: Date.now(),
+  });
+  save();
+  document.getElementById('loan-name').value = '';
+  renderLoanPlanner();
+  toast('Scenario saved');
+}
+
+function deleteLoanScenario(id) {
+  if (!confirm('Delete this scenario?')) return;
+  state.loanScenarios = state.loanScenarios.filter(s => s.id !== id);
+  save();
+  renderLoanPlanner();
+  toast('Removed');
+}
+
+function renderLoanPlanner() {
+  // Render saved scenarios
+  const el = document.getElementById('scenariosList');
+  if (!state.loanScenarios.length) {
+    el.innerHTML = '<div class="empty"><div class="msg">no saved scenarios yet</div></div>';
+  } else {
+    el.innerHTML = state.loanScenarios.map(s => {
+      const calc = calcLoan(s.amount, s.rate, s.months, s.freq);
+      return `<div class="scenario-card">
+        <div class="scenario-header">
+          <div class="name">${escapeHtml(s.name)}</div>
+          <button class="btn small danger" onclick="deleteLoanScenario('${s.id}')">×</button>
+        </div>
+        <div class="scenario-grid">
+          <span class="lbl">Loan</span><span class="val">${fmt(s.amount)}</span>
+          <span class="lbl">Rate · Term</span><span class="val">${s.rate}% · ${s.months}mo</span>
+          <span class="lbl">Per ${s.freq === 'biweekly' ? 'paycheck' : 'month'}</span><span class="val bad">${fmt(calc.perPeriodPayment)}</span>
+          <span class="lbl">Total interest</span><span class="val">${fmt(calc.totalInterest)}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Render pay-for-delete cards for each collection
+  const collections = state.debts.filter(d => d.type === 'collection');
+  const pdEl = document.getElementById('payDeleteList');
+  if (!collections.length) {
+    pdEl.innerHTML = '<div class="empty"><div class="msg">no collections to negotiate</div></div>';
+  } else {
+    pdEl.innerHTML = collections.map(c => `
+      <div class="scenario-card" onclick="openPayDeleteModal('${c.id}')">
+        <div class="scenario-header">
+          <div class="name">${escapeHtml(c.name)}</div>
+          <div class="verdict caution">NEGOTIATE</div>
+        </div>
+        <div class="scenario-grid">
+          <span class="lbl">Balance</span><span class="val bad">${fmt(c.balance)}</span>
+          <span class="lbl">30% offer</span><span class="val good">${fmt(c.balance * 0.3)}</span>
+          <span class="lbl">40% offer</span><span class="val good">${fmt(c.balance * 0.4)}</span>
+          <span class="lbl">50% offer</span><span class="val">${fmt(c.balance * 0.5)}</span>
+        </div>
+        <div class="scenario-summary">Tap to generate a pay-for-delete letter.</div>
+      </div>
+    `).join('');
+  }
+}
+
+function openPayDeleteModal(debtId) {
+  const debt = state.debts.find(d => d.id === debtId);
+  if (!debt) return;
+  state.txDraft.payDeleteId = debtId;
+  document.getElementById('payDeleteCollector').textContent = debt.name + ' · ' + fmt(debt.balance);
+  document.getElementById('pd-percent').value = 40;
+  document.getElementById('pd-name').value = state.payDeleteName || '';
+  document.getElementById('pd-address').value = state.payDeleteAddress || '';
+  document.getElementById('pd-account').value = '';
+  renderPayDeleteLetter();
+  openModal('payDeleteModal');
+}
+
+function renderPayDeleteLetter() {
+  const debtId = state.txDraft.payDeleteId;
+  const debt = state.debts.find(d => d.id === debtId);
+  if (!debt) return;
+
+  const percent = parseInt(document.getElementById('pd-percent').value) || 40;
+  const offer = debt.balance * (percent / 100);
+  const name = document.getElementById('pd-name').value.trim() || '[Your Name]';
+  const address = document.getElementById('pd-address').value.trim() || '[Your Address]';
+  const account = document.getElementById('pd-account').value.trim() || '[Account/Reference Number if known]';
+  const todayDate = today().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Save name/address for next time
+  if (document.getElementById('pd-name').value.trim()) state.payDeleteName = document.getElementById('pd-name').value.trim();
+  if (document.getElementById('pd-address').value.trim()) state.payDeleteAddress = document.getElementById('pd-address').value.trim();
+
+  const letter = `${name}
+${address}
+
+${todayDate}
+
+${debt.name}
+[Collector's Address from their letter]
+
+Re: Account/Reference: ${account}
+Original Creditor: [Original Creditor if known]
+Current Balance Claimed: ${fmt(debt.balance)}
+
+To Whom It May Concern:
+
+This letter is in response to your contact regarding the above-referenced account. I am not acknowledging that this debt is valid or that I owe the amount claimed. I am writing to propose a settlement on the following specific terms:
+
+1. I will pay ${fmt(offer)} (${percent}% of the claimed balance) in full and final settlement of this account.
+
+2. In exchange, you agree to:
+   a. Accept this payment as full satisfaction of the entire claimed balance, with no further amount owed.
+   b. Request DELETION of any and all references to this account from my credit reports with all three credit bureaus (Equifax, Experian, and TransUnion) within 30 days of receiving payment.
+   c. Cease all collection activity, including phone calls, letters, and any reporting to credit bureaus.
+   d. Not sell, transfer, or assign this account to any third party.
+
+3. This offer is contingent upon receiving your written agreement to ALL of the above terms before payment is made. I will not send payment based on a verbal agreement. Please respond in writing on company letterhead.
+
+4. Once I receive your written agreement, I will issue payment via [money order / cashier's check] within 14 days. I will not provide bank account or card information.
+
+5. If you do not agree to these terms, please consider this letter a formal request to cease all communication except to confirm receipt of this letter, pursuant to my rights under the Fair Debt Collection Practices Act (FDCPA), 15 U.S.C. § 1692c.
+
+Nothing in this letter should be construed as an admission that this debt is owed, valid, or enforceable. All rights are expressly reserved.
+
+This offer expires 30 days from the date of this letter.
+
+Sincerely,
+
+
+${name}
+
+---
+SEND VIA CERTIFIED MAIL WITH RETURN RECEIPT.
+Keep a copy for your records. Do NOT pay until you receive a signed agreement.`;
+
+  document.getElementById('pdLetterPreview').textContent = letter;
+}
+
+function copyPayDeleteLetter() {
+  const text = document.getElementById('pdLetterPreview').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => toast('Letter copied to clipboard'));
+  } else {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Letter copied');
+  }
+}
+
+/* ========================================================================
+   DREAD INDEX
+   ======================================================================== */
+function calculateDreadIndex() {
+  // Score 0-100 (higher = worse / more dread)
+  // Components:
+  //   - Past-due bills (heavy weight)
+  //   - Fun money pace vs day of week
+  //   - Days since last check-in (drift accumulating)
+  //   - Goals behind pace
+  //   - Drift on last check-in
+  //   - High debt / low credit score
+  let dread = 0;
+  const factors = [];
+
+  // Past-due bills
+  const pastDue = state.bills.filter(b => billIsPastDue(b));
+  if (pastDue.length) {
+    const w = Math.min(30, pastDue.length * 12);
+    dread += w;
+    factors.push({ label: 'Past-due bills', value: pastDue.length, weight: w });
+  }
+
+  // Fun money pace
+  const weekStart = startOfWeek(today());
+  const weekTx = state.transactions.filter(t => t.type === 'expense' && parseDate(t.date) >= weekStart);
+  const weekSpent = weekTx.reduce((s, t) => s + t.amount, 0);
+  const fun = state.income.funMoney || 1;
+  const dayOfWeek = today().getDay();
+  const expected = (fun / 7) * (dayOfWeek + 1);
+  if (weekSpent > expected * 1.2) {
+    const w = Math.min(20, ((weekSpent - expected) / fun) * 30);
+    dread += w;
+    factors.push({ label: 'Spending hot this week', value: `${((weekSpent / fun) * 100).toFixed(0)}%`, weight: Math.round(w) });
+  }
+
+  // Days since last check-in
+  const last = lastCheckIn();
+  if (state.initialized) {
+    const lastDays = last ? daysBetween(parseDate(last.date), today()) : 999;
+    if (lastDays > 7) {
+      const w = Math.min(15, (lastDays - 7) * 1.2);
+      dread += w;
+      factors.push({ label: 'No recent check-in', value: lastDays === 999 ? 'never' : `${lastDays}d`, weight: Math.round(w) });
+    }
+  }
+
+  // Drift on last check-in
+  if (last && Math.abs(last.drift) > 20) {
+    const w = Math.min(15, Math.abs(last.drift) / 10);
+    dread += w;
+    factors.push({ label: 'Last check-in had drift', value: fmt(last.drift), weight: Math.round(w) });
+  }
+
+  // Goals behind pace
+  const behindGoals = state.goals.filter(g => g.targetDate && !isOnPace(g) && g.current < g.target).length;
+  if (behindGoals) {
+    const w = behindGoals * 5;
+    dread += w;
+    factors.push({ label: 'Goals behind pace', value: behindGoals, weight: w });
+  }
+
+  // Days since backup
+  if (state.initialized) {
+    const lastExport = state.lastExportDate ? parseDate(state.lastExportDate) : null;
+    const daysSince = lastExport ? daysBetween(lastExport, today()) : 999;
+    if (daysSince > 14) {
+      const w = Math.min(10, (daysSince - 14) * 0.5);
+      dread += w;
+      factors.push({ label: 'Backup overdue', value: lastExport ? `${daysSince}d` : 'never', weight: Math.round(w) });
+    }
+  }
+
+  dread = Math.min(100, Math.round(dread));
+  return { score: dread, factors };
+}
+
+function renderDreadIndex() {
+  const { score, factors } = calculateDreadIndex();
+  const el = document.getElementById('dreadValue');
+  const fill = document.getElementById('dreadFill');
+  const detail = document.getElementById('dreadDetail');
+
+  el.textContent = score;
+
+  // Color: green→yellow→red
+  let color, label;
+  if (score < 25) { color = 'var(--moss-bright)'; label = 'steady'; }
+  else if (score < 50) { color = 'var(--candle)'; label = 'mild'; }
+  else if (score < 75) { color = 'var(--rust)'; label = 'rising'; }
+  else { color = 'var(--blood-bright)'; label = 'heavy'; }
+
+  fill.style.width = score + '%';
+  fill.style.background = color;
+  el.style.color = color;
+
+  if (!factors.length) {
+    detail.innerHTML = `<em style="color: var(--moss-bright);">${label}</em> · nothing's pulling you down right now. tap to refresh.`;
+  } else {
+    detail.innerHTML = `<em style="color: ${color};">${label}</em> · contributors:<br/>` + factors.map(f => `<div style="margin-top: 3px;">→ ${f.label}: <span style="color: var(--ink);">${f.value}</span> <small style="opacity: 0.6;">(+${f.weight})</small></div>`).join('');
+  }
+}
+
+function toggleDreadDetail() {
+  document.getElementById('dreadIndex').classList.toggle('expanded');
+}
+
+/* ========================================================================
+   BACKUP BANNER
+   ======================================================================== */
+function renderBackupBanner() {
+  const el = document.getElementById('backupBanner');
+  if (!state.initialized) { el.innerHTML = ''; return; }
+  const lastExport = state.lastExportDate ? parseDate(state.lastExportDate) : null;
+  const daysSince = lastExport ? daysBetween(lastExport, today()) : 999;
+
+  if (!lastExport) {
+    el.innerHTML = `<div class="banner">
+      <div class="banner-text"><strong>No backup yet.</strong> Your data lives in this browser only. Export now to be safe.</div>
+      <button class="btn small primary" onclick="exportData()">Export</button>
+    </div>`;
+  } else if (daysSince > 14) {
+    el.innerHTML = `<div class="banner warn">
+      <div class="banner-text"><strong>Backup overdue.</strong> Last export ${daysSince} days ago. Export now.</div>
+      <button class="btn small primary" onclick="exportData()">Export</button>
+    </div>`;
+  } else if (daysSince > 7) {
+    el.innerHTML = `<div class="banner">
+      <div class="banner-text">Last backup ${daysSince}d ago. <strong>Export when convenient.</strong></div>
+      <button class="btn small" onclick="exportData()">Export</button>
+    </div>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+
 load();
 checkOnboard();
 if (state.initialized) renderAll();
